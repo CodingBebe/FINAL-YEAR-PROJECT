@@ -1,0 +1,370 @@
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useToast } from "@/components/ui/use-toast";
+import { Textarea } from "@/components/ui/textarea";
+
+// Mock risk data - replace with actual API call
+const mockRisks = [
+  {
+    id: "A1",
+    title: "Possibility of inadequate healthcare to University community members living with HIV/AIDS and Non-Communicable Diseases",
+    description: "Healthcare services and support for university community",
+    principalOwner: "Planning, Finance and Administration",
+    supportingOwner: "Planning, Finance and Administration",
+    category: "Health Safety and Welfare",
+    strategicObjective: "Improve healthcare services and support",
+    targets: ["Provide Health education /Counselling", "Regular health assessments"]
+  },
+  {
+    id: "B1",
+    title: "Risk of non-compliance with National Anti-Corruption Requirements",
+    description: "Compliance with anti-corruption regulations and requirements",
+    principalOwner: "Planning, Finance and Administration",
+    supportingOwner: "Planning, Finance and Administration",
+    category: "Compliance",
+    strategicObjective: "Ensure compliance with national requirements",
+    targets: ["Regular compliance audits", "Staff training"]
+  },
+  {
+    id: "B2",
+    title: "Possibility of non-compliance to public service code of ethics and conduct",
+    description: "Adherence to public service ethics and conduct standards",
+    principalOwner: "Planning, Finance and Administration",
+    supportingOwner: "Planning, Finance and Administration",
+    category: "Compliance",
+    strategicObjective: "Maintain ethical standards",
+    targets: ["Ethics training", "Regular assessments"]
+  },
+  {
+    id: "C1",
+    title: "Possibility of failure to sustainably run a standing scholarship programme",
+    description: "Sustainability of scholarship programs",
+    principalOwner: "Deputy Vice Chancellor - Academic",
+    supportingOwner: "Deputy Vice Chancellor - Academic",
+    category: "Academic",
+    strategicObjective: "Maintain sustainable scholarship programs",
+    targets: ["Fund management", "Program assessment"]
+  },
+  {
+    id: "C2",
+    title: "Possibility of inadequate competences of university graduates",
+    description: "Graduate competency and skills development",
+    principalOwner: "Planning, Finance and Administration",
+    supportingOwner: "Planning, Finance and Administration",
+    category: "Compliance",
+    strategicObjective: "Ensure graduate competency",
+    targets: ["Curriculum review", "Skills assessment"]
+  },
+  {
+    id: "C3",
+    title: "Possibility of weak innovation and entrepreneurship skills to undergraduate students",
+    description: "Innovation and entrepreneurship skills development",
+    principalOwner: "Deputy Vice Chancellor - Academic",
+    supportingOwner: "Deputy Vice Chancellor - Academic",
+    category: "Innovation",
+    strategicObjective: "Enhance student innovation and entrepreneurship",
+    targets: ["Innovation programs", "Entrepreneurship training"]
+  },
+  {
+    id: "C4",
+    title: "Possibility of inadequate examination processes",
+    description: "Examination process quality and security",
+    principalOwner: "Deputy Vice Chancellor - Academic",
+    supportingOwner: "Deputy Vice Chancellor - Academic",
+    category: "Academic",
+    strategicObjective: "Improve examination processes",
+    targets: ["Process review", "Security enhancement"]
+  },
+  {
+    id: "D1",
+    title: "Possibility of inadequate number and quality of research output",
+    description: "Research output quantity and quality",
+    principalOwner: "Deputy Vice Chancellor - Research",
+    supportingOwner: "Deputy Vice Chancellor - Research",
+    category: "Research & Consultancy",
+    strategicObjective: "Enhance research output",
+    targets: ["Research support", "Quality monitoring"]
+  },
+  {
+    id: "D2",
+    title: "Possibility of attracting insufficient number of and amount of funds from consultancy projects",
+    description: "Consultancy project funding",
+    principalOwner: "Deputy Vice Chancellor - Research",
+    supportingOwner: "Deputy Vice Chancellor - Research",
+    category: "Research & Consultancy",
+    strategicObjective: "Increase consultancy funding",
+    targets: ["Project outreach", "Funding strategies"]
+  },
+  {
+    id: "D3",
+    title: "Possibility of failure to harness technological development",
+    description: "Technological advancement and adoption",
+    principalOwner: "Deputy Vice Chancellor - Research",
+    supportingOwner: "Deputy Vice Chancellor - Research",
+    category: "Research & Consultancy",
+    strategicObjective: "Improve technological adoption",
+    targets: ["Tech assessment", "Implementation planning"]
+  },
+  {
+    id: "D4",
+    title: "Possibility of inadequate quality of UDSM journals",
+    description: "Journal quality management",
+    principalOwner: "Deputy Vice Chancellor - Research",
+    supportingOwner: "Deputy Vice Chancellor - Research",
+    category: "Research & Consultancy",
+    strategicObjective: "Enhance journal quality",
+    targets: ["Quality standards", "Editorial processes"]
+  }
+];
+
+interface TargetRow {
+  id: number;
+  target: string;
+  achievement: string;
+  status: string;
+}
+
+export default function SubmitRiskReport() {
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const { toast } = useToast();
+  const [selectedCell, setSelectedCell] = useState<number | null>(null);
+  const [riskData, setRiskData] = useState<any>(null);
+  const [formData, setFormData] = useState({
+    timePeriod: "JANUARY-MARCH",
+    year: "2024",
+    targetStatuses: ["NOT_ACHIEVED", "NOT_ACHIEVED"],
+    progressMade: "",
+    majorChallenges: "",
+    wayForward: "",
+  });
+
+  useEffect(() => {
+    const risk = mockRisks.find(r => r.id === id);
+    if (risk) {
+      setRiskData(risk);
+    }
+  }, [id]);
+
+  const handleSubmit = () => {
+    if (!selectedCell) {
+      toast({
+        title: "Error",
+        description: "Please select a risk rating",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    console.log("Submitting:", {
+      riskId: riskData?.id,
+      ...formData,
+      rating: selectedCell
+    });
+    
+    toast({
+      title: "Success",
+      description: "Report submitted successfully"
+    });
+    
+    navigate("/champion/risks");
+  };
+
+  if (!riskData) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <div className="p-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Submit Risk Report</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {/* Basic Info */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Risk ID</Label>
+                <Input value={riskData.id} readOnly />
+              </div>
+              <div>
+                <Label>Time Period</Label>
+                <Select
+                  value={formData.timePeriod}
+                  onValueChange={(value) => setFormData({ ...formData, timePeriod: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select period" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="JANUARY-MARCH">January - March</SelectItem>
+                    <SelectItem value="APRIL-JUNE">April - June</SelectItem>
+                    <SelectItem value="JULY-SEPTEMBER">July - September</SelectItem>
+                    <SelectItem value="OCTOBER-DECEMBER">October - December</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="col-span-2">
+                <Label>Risk Title</Label>
+                <Input value={riskData.title} readOnly />
+              </div>
+            </div>
+
+            {/* Risk Details */}
+            <div>
+              <h3 className="font-medium mb-4">Risk Details</h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <Label>Description</Label>
+                  <p className="mt-1">{riskData.description}</p>
+                </div>
+                <div>
+                  <Label>Principal Owner</Label>
+                  <p className="mt-1">{riskData.principalOwner}</p>
+                </div>
+                <div>
+                  <Label>Supporting Owner</Label>
+                  <p className="mt-1">{riskData.supportingOwner}</p>
+                </div>
+                <div>
+                  <Label>Category</Label>
+                  <p className="mt-1">{riskData.category}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Risk Matrix */}
+            <div>
+              <h3 className="font-medium mb-4">Risk Rating</h3>
+              <div className="grid grid-cols-6 gap-1 text-sm">
+                <div></div>
+                {[1, 2, 3, 4, 5].map(n => (
+                  <div key={n} className="text-center font-medium">
+                    {n}
+                  </div>
+                ))}
+                {[5, 4, 3, 2, 1].map(impact => (
+                  <>
+                    <div key={impact} className="text-right font-medium pr-2">
+                      {impact}
+                    </div>
+                    {[1, 2, 3, 4, 5].map(likelihood => {
+                      const rating = impact * likelihood;
+                      return (
+                        <button
+                          key={`${impact}-${likelihood}`}
+                          onClick={() => setSelectedCell(rating)}
+                          className={`
+                            h-6 w-full rounded
+                            ${selectedCell === rating ? 'ring-2 ring-blue-500' : ''}
+                            ${rating >= 17 ? 'bg-red-100' :
+                              rating >= 10 ? 'bg-orange-100' :
+                              rating >= 4 ? 'bg-yellow-100' :
+                              'bg-green-100'
+                            }
+                          `}
+                        >
+                          {rating}
+                        </button>
+                      );
+                    })}
+                  </>
+                ))}
+              </div>
+              <div className="mt-2 text-sm text-gray-500">
+                Click to select risk rating (Impact × Likelihood)
+              </div>
+            </div>
+
+            {/* Targets */}
+            <div>
+              <h3 className="font-medium mb-4">Targets</h3>
+              <div className="space-y-4">
+                {riskData.targets.map((target: string, index: number) => (
+                  <div key={index} className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Target {index + 1}</Label>
+                      <Input value={target} readOnly />
+                    </div>
+                    <div>
+                      <Label>Status</Label>
+                      <Select
+                        value={formData.targetStatuses[index]}
+                        onValueChange={(value) => {
+                          const newStatuses = [...formData.targetStatuses];
+                          newStatuses[index] = value;
+                          setFormData({ ...formData, targetStatuses: newStatuses });
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="NOT_ACHIEVED">Not Achieved</SelectItem>
+                          <SelectItem value="PARTIALLY_ACHIEVED">Partially Achieved</SelectItem>
+                          <SelectItem value="FULLY_ACHIEVED">Fully Achieved</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Comments */}
+            <div className="space-y-4">
+              <div>
+                <Label>Progress Made</Label>
+                <Textarea
+                  value={formData.progressMade}
+                  onChange={(e) => setFormData({ ...formData, progressMade: e.target.value })}
+                  placeholder="Describe the progress made..."
+                />
+              </div>
+              <div>
+                <Label>Major Challenges</Label>
+                <Textarea
+                  value={formData.majorChallenges}
+                  onChange={(e) => setFormData({ ...formData, majorChallenges: e.target.value })}
+                  placeholder="Describe any major challenges..."
+                />
+              </div>
+              <div>
+                <Label>Way Forward</Label>
+                <Textarea
+                  value={formData.wayForward}
+                  onChange={(e) => setFormData({ ...formData, wayForward: e.target.value })}
+                  placeholder="Describe the way forward..."
+                />
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex justify-end">
+              <Button onClick={handleSubmit}>
+                Submit Report
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+} 

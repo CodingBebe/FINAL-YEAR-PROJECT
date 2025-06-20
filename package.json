@@ -1,0 +1,21 @@
+{
+  "name": "udsm-rmis-project",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:FRONTEND\" \"npm run dev:BACKEND\"",
+    "dev:FRONTEND": "cd FRONTEND && npm start",
+    "dev:BACKEND": "cd BACKEND && npm run dev",
+    "build": "cd FRONTEND && npm run build",
+    "install:all": "npm install && cd FRONTEND && npm install && cd ../BACKEND && npm install",
+    "clean": "rm -rf node_modules FRONTEND/node_modules BACKEND/node_modules",
+    "test": "cd FRONTEND && npm test"
+  },
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
