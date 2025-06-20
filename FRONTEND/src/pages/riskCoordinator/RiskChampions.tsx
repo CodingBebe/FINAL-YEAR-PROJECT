@@ -37,7 +37,7 @@ const RiskChampionsPage = () => {
           <h1 className="text-3xl font-bold">Risk Champions</h1>
           <p className="text-gray-500">Manage department risk champions</p>
         </div>
-        <Button className="bg-udsm-blue hover:bg-udsm-blue/90" onClick={() => setShowForm(true)}>
+        <Button className="bg-blue-700 hover:bg-blue-800" onClick={() => setShowForm(true)}>
           + Add Risk Champion
         </Button>
       </div>
