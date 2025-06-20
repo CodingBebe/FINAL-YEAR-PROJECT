@@ -68,6 +68,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       success: true,
       message: 'Login successful',
       token,
+        role: user.role, 
       user: {
         id: user.id,
         email: user.email,

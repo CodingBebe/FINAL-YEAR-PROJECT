@@ -1,28 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import ReactSelect from "react-select"; // Add this import at the top
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import ReactSelect from "react-select"; 
+import {Select,  SelectContent,  SelectItem,  SelectTrigger, SelectValue,} from "@/components/ui/select";
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { stat } from "fs";
 
 const RiskRegistrationForm = () => {
   const navigate = useNavigate();
@@ -33,6 +21,7 @@ const RiskRegistrationForm = () => {
   const [formData, setFormData] = useState({
     title: "",
     riskId: "",
+    strategicObjective: "", 
     description: "",
     principalOwner: "",
     supportingOwners: [],
@@ -44,6 +33,25 @@ const RiskRegistrationForm = () => {
     existingControls: "",
     proposedMitigation: "",
   });
+
+const [strategicObjectives, setStrategicObjectives] = useState([]);
+  const [loadingObjectives, setLoadingObjectives] = useState(true);
+
+  useEffect(() => {
+    const fetchStrategicObjectives = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/strategic-objectives");
+        const data = await res.json();
+        setStrategicObjectives(data);
+      } catch (error) {
+        console.error("Failed to load strategic objectives", error);
+      } finally {
+        setLoadingObjectives(false);
+      }
+    };
+
+    fetchStrategicObjectives();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -63,22 +71,42 @@ const RiskRegistrationForm = () => {
       return { ...prev, supportingOwners: newOwners };
     });
   };
+  
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsSubmitting(true);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  try {
+    const response = await fetch("http://localhost:3000/api/risks", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to submit form");
+    }
+
+    toast({
+      title: "Risk Registered",
+      description: "The risk has been successfully registered.",
+    });
 
     setTimeout(() => {
-      setIsSubmitting(false);
-      toast({
-        title: "Risk Registered",
-        description: "The risk has been successfully registered.",
-      });
-      setTimeout(() => {
-        navigate("/admin/dashboard");
-      }, 1500); // Wait 1.5 seconds before navigating
-    }, 1000);
-  };
+      navigate("/coordinator/dashboard");
+    }, 1500);
+  } catch (error) {
+    toast({
+      title: "Submission Failed",
+      description: error.message,
+      variant: "destructive",
+    });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const nextTab = () => {
     if (activeTab === "details") setActiveTab("assessment");
@@ -207,6 +235,25 @@ const RiskRegistrationForm = () => {
                   required
                 />
               </div>
+
+          <div className="space-y-2">
+  <Label htmlFor="strategicObjective">Strategic Objective</Label>
+  <Select
+    value={formData.strategicObjective}
+    onValueChange={(value) => handleSelectChange("strategicObjective", value)}
+  >
+    <SelectTrigger id="strategicObjective">
+      <SelectValue placeholder="Select strategic objective" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="A">A-Enhance Academic Excellence</SelectItem>
+      <SelectItem value="B">B-Promote Research and Innovation</SelectItem>
+      <SelectItem value="C">C-Improve Institutional Sustainability</SelectItem>
+      <SelectItem value="D">D-Strengthen Community Engagement</SelectItem>
+         </SelectContent>
+  </Select>
+</div>
+
 
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>

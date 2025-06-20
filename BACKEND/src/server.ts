@@ -2,6 +2,7 @@ import { initializeDatabase } from './config/init';
 import express from 'express';
 import cors from "cors";
 import authRouter from "./routes/auth";
+import riskRoutes from "./routes/risks";
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -15,6 +16,7 @@ app.get("/", (req, res) => {
 
 // Register your auth routes under /api
 app.use("/api", authRouter);
+app.use('/api/risks', riskRoutes);
 
 // Initialize database before starting server
 initializeDatabase().then(() => {

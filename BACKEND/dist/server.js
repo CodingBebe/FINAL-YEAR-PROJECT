@@ -7,6 +7,7 @@ const init_1 = require("./config/init");
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const auth_1 = __importDefault(require("./routes/auth"));
+const risks_1 = __importDefault(require("./routes/risks"));
 const PORT = process.env.PORT || 3000;
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
@@ -16,6 +17,7 @@ app.get("/", (req, res) => {
 });
 // Register your auth routes under /api
 app.use("/api", auth_1.default);
+app.use('/api/risks', risks_1.default);
 // Initialize database before starting server
 (0, init_1.initializeDatabase)().then(() => {
     app.listen(PORT, () => {
