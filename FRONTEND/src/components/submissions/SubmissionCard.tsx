@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Edit2, Eye, Clock } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 
 interface SubmissionCardProps {
@@ -24,7 +24,7 @@ export function SubmissionCard({
   status,
   isEditable,
 }: SubmissionCardProps) {
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -42,11 +42,11 @@ export function SubmissionCard({
   };
 
   const handleEdit = () => {
-    router.push(`/risk-champion/submissions/edit/${id}`);
+    navigate(`/risk-champion/submissions/edit/${id}`);
   };
 
   const handleView = () => {
-    router.push(`/risk-champion/submissions/view/${id}`);
+    navigate(`/risk-champion/submissions/view/${id}`);
   };
 
   return (

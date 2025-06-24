@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { SubmissionCard } from "@/components/submissions/SubmissionCard";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 import { isWithinInterval, startOfQuarter, endOfQuarter, parseISO } from "date-fns";
 
 interface Submission {
@@ -15,7 +15,7 @@ interface Submission {
 }
 
 export default function Submissions() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [currentQuarter, setCurrentQuarter] = useState<string>("");
 
@@ -73,7 +73,7 @@ export default function Submissions() {
   }, []);
 
   const handleNewSubmission = () => {
-    router.push("/risk-champion/submissions/new");
+    navigate("/risk-champion/submissions/new");
   };
 
   return (

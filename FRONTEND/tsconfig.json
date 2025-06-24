@@ -19,6 +19,6 @@
     "moduleResolution": "node",
     "module": "esnext",
     "target": "es6",
-    "types": ["react", "react-dom"]
+    "types": ["react", "react-dom", "vite/client"]
   }
 }

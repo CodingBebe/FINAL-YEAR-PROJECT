@@ -18,6 +18,13 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 // Mock risk data - replace with actual API call
 const mockRisks = [
@@ -144,9 +151,15 @@ export default function SubmitRiskReport() {
   const navigate = useNavigate();
   const { id } = useParams();
   const { toast } = useToast();
-  const [selectedCell, setSelectedCell] = useState<number | null>(null);
+  const [selectedLikelihood, setSelectedLikelihood] = useState<number | null>(null);
+  const [selectedImpact, setSelectedImpact] = useState<number | null>(null);
   const [riskData, setRiskData] = useState<any>(null);
   const [targetRows, setTargetRows] = useState<TargetRow[]>([]);
+  const [timePeriod, setTimePeriod] = useState("JANUARY-MARCH");
+  const [year, setYear] = useState("2025");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [showValidationDialog, setShowValidationDialog] = useState(false);
 
   useEffect(() => {
     const risk = mockRisks.find(r => r.id === id);
@@ -175,12 +188,108 @@ export default function SubmitRiskReport() {
     }
   };
 
-  const getSeverity = (rating: number | null): string => {
-    if (!rating) return "Low";
-    if (rating >= 17) return "Critical";
-    if (rating >= 10) return "High";
-    if (rating >= 4) return "Medium";
+  const getScore = () => {
+    if (selectedLikelihood && selectedImpact) {
+      return selectedLikelihood * selectedImpact;
+    }
+    return 0;
+  };
+
+  const getSeverity = (score: number): string => {
+    if (score >= 17) return "Critical";
+    if (score >= 10) return "High";
+    if (score >= 4) return "Medium";
     return "Low";
+  };
+
+  const validateForm = () => {
+    const errors: string[] = [];
+
+    // Check if risk rating is selected
+    if (!selectedLikelihood || !selectedImpact) {
+      errors.push("Risk Rating: Please select likelihood and impact from the matrix");
+    }
+
+    // Check if time period is selected
+    if (!timePeriod) {
+      errors.push("Time Period: Please select a time period");
+    }
+
+    // Check if year is selected
+    if (!year) {
+      errors.push("Year: Please select a year");
+    }
+
+    // Check target rows
+    targetRows.forEach((row, index) => {
+      if (!row.achievement.trim()) {
+        errors.push(`Target ${index + 1}: Please fill in the achievement`);
+      }
+      if (!row.status) {
+        errors.push(`Target ${index + 1}: Please select a status`);
+      }
+    });
+
+    return errors;
+  };
+
+  const handleSubmit = async () => {
+    const errors = validateForm();
+    
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      setShowValidationDialog(true);
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      // Prepare the report data
+      const reportData = {
+        riskId: riskData.id,
+        timePeriod,
+        year,
+        likelihood: selectedLikelihood,
+        impact: selectedImpact,
+        score: getScore(),
+        severity: getSeverity(getScore()),
+        targets: targetRows.map(row => ({
+          target: row.target,
+          achievement: row.achievement.trim(),
+          status: row.status
+        }))
+      };
+
+      // Here you would normally make an API call to submit the report
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      toast({
+        title: "Success",
+        description: "Risk report submitted successfully",
+        duration: 3000,
+      });
+
+      navigate("/champion/risks");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit the report. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Update the time period state when selection changes
+  const handleTimePeriodChange = (value: string) => {
+    setTimePeriod(value);
+  };
+
+  // Update the year state when selection changes
+  const handleYearChange = (value: string) => {
+    setYear(value);
   };
 
   if (!riskData) {
@@ -208,8 +317,8 @@ export default function SubmitRiskReport() {
 
         <div className="grid grid-cols-2 gap-6">
           <div className="space-y-1">
-            <Label className="text-sm font-medium">Time Period</Label>
-            <Select defaultValue="JANUARY-MARCH">
+            <Label className="text-sm font-medium">Time Period <span className="text-red-500">*</span></Label>
+            <Select value={timePeriod} onValueChange={handleTimePeriodChange}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -222,8 +331,8 @@ export default function SubmitRiskReport() {
             </Select>
           </div>
           <div className="space-y-1">
-            <Label className="text-sm font-medium">Year</Label>
-            <Select defaultValue="2025">
+            <Label className="text-sm font-medium">Year <span className="text-red-500">*</span></Label>
+            <Select value={year} onValueChange={handleYearChange}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -283,8 +392,8 @@ export default function SubmitRiskReport() {
             <thead className="bg-[#1A365D] text-white">
               <tr>
                 <th className="p-3 text-left">Target</th>
-                <th className="p-3 text-left">Achievement</th>
-                <th className="p-3 text-left">Status</th>
+                <th className="p-3 text-left">Achievement <span className="text-red-300">*</span></th>
+                <th className="p-3 text-left">Status <span className="text-red-300">*</span></th>
               </tr>
             </thead>
             <tbody>
@@ -300,6 +409,8 @@ export default function SubmitRiskReport() {
                         );
                         setTargetRows(newRows);
                       }}
+                      placeholder="Enter achievement"
+                      className={!row.achievement.trim() ? "border-red-200" : ""}
                     />
                   </td>
                   <td className="p-3">
@@ -312,7 +423,7 @@ export default function SubmitRiskReport() {
                         setTargetRows(newRows);
                       }}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className={!row.status ? "border-red-200" : ""}>
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                       <SelectContent>
@@ -333,59 +444,91 @@ export default function SubmitRiskReport() {
         </Button>
 
         {/* Risk Matrix */}
-        <div className="space-y-2">
-          <p className="text-sm text-gray-500">Click on the matrix to select the likelihood and impact of this risk.</p>
-          <div className="grid grid-cols-6 gap-1 w-[500px]">
-            <div></div>
-            {[1, 2, 3, 4, 5].map(n => (
-              <div key={n} className="text-center text-sm">
-                {n}
-              </div>
-            ))}
-            {[5, 4, 3, 2, 1].map(impact => (
-              <>
-                <div key={impact} className="text-right pr-2 text-sm">
-                  {impact}
+        <div className="space-y-4">
+          <p className="text-sm text-gray-500">
+            Click on the matrix to select the likelihood and impact of this risk 
+            <span className="text-red-500 ml-1">*</span>
+          </p>
+          
+          <div className="relative w-[500px]">
+            {/* Impact label at top */}
+            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-6">
+              <span className="text-lg font-semibold text-gray-700">Impact</span>
+            </div>
+
+            {/* Likelihood label on left */}
+            <div className="absolute left-0 top-1/2 transform -translate-x-8 -translate-y-1/2">
+              <span className="text-lg font-semibold text-gray-700" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
+                Likelihood
+              </span>
+            </div>
+
+            <div className="grid grid-cols-6 gap-1 mt-6">
+              {/* Impact numbers */}
+              <div></div>
+              {[1, 2, 3, 4, 5].map(n => (
+                <div key={n} className="text-center font-medium text-gray-600">
+                  {n}
                 </div>
-                {[1, 2, 3, 4, 5].map(likelihood => {
-                  const rating = impact * likelihood;
-                  return (
-                    <button
-                      key={`${impact}-${likelihood}`}
-                      onClick={() => setSelectedCell(rating)}
-                      className={`
-                        aspect-square text-sm rounded
-                        ${selectedCell === rating ? 'ring-2 ring-blue-500' : ''}
-                        ${rating >= 17 ? 'bg-red-100' :
-                          rating >= 10 ? 'bg-orange-100' :
-                          rating >= 4 ? 'bg-yellow-100' :
-                          'bg-green-100'
-                        }
-                      `}
-                    >
-                      {rating}
-                    </button>
-                  );
-                })}
-              </>
-            ))}
+              ))}
+
+              {/* Matrix with likelihood numbers and cells */}
+              {[5, 4, 3, 2, 1].map(likelihood => (
+                <>
+                  <div key={`row-${likelihood}`} className="text-right pr-2 font-medium text-gray-600">
+                    {likelihood}
+                  </div>
+                  {[1, 2, 3, 4, 5].map(impact => {
+                    const score = likelihood * impact;
+                    const isSelected = selectedLikelihood === likelihood && selectedImpact === impact;
+                    
+                    const getCellColor = () => {
+                      if (score >= 17) return 'bg-red-500/50 hover:bg-red-500/70';
+                      if (score >= 10) return 'bg-yellow-500/50 hover:bg-yellow-500/70';
+                      if (score >= 4) return 'bg-yellow-300/50 hover:bg-yellow-300/70';
+                      return 'bg-green-500/50 hover:bg-green-500/70';
+                    };
+
+                    return (
+                      <button
+                        key={`${likelihood}-${impact}`}
+                        onClick={() => {
+                          setSelectedLikelihood(likelihood);
+                          setSelectedImpact(impact);
+                        }}
+                        className={`
+                          aspect-square text-sm rounded-sm font-medium
+                          transition-all duration-200 hover:scale-105
+                          ${isSelected ? 'ring-2 ring-blue-500 ring-offset-2' : ''}
+                          ${getCellColor()}
+                        `}
+                      >
+                        {score}
+                      </button>
+                    );
+                  })}
+                </>
+              ))}
+            </div>
           </div>
-          <div className="flex gap-4 text-sm mt-4">
+
+          {/* Legend */}
+          <div className="flex gap-6 mt-4">
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-green-100"></div>
-              <span>Low (1-3)</span>
+              <div className="w-4 h-4 bg-green-500/50"></div>
+              <span className="text-sm">Low (1-3)</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-yellow-100"></div>
-              <span>Medium (4-9)</span>
+              <div className="w-4 h-4 bg-yellow-300/50"></div>
+              <span className="text-sm">Medium (4-9)</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-orange-100"></div>
-              <span>High (10-16)</span>
+              <div className="w-4 h-4 bg-yellow-500/50"></div>
+              <span className="text-sm">High (10-16)</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-red-100"></div>
-              <span>Critical (17-25)</span>
+              <div className="w-4 h-4 bg-red-500/50"></div>
+              <span className="text-sm">Critical (17-25)</span>
             </div>
           </div>
         </div>
@@ -394,32 +537,52 @@ export default function SubmitRiskReport() {
         <div className="space-y-2">
           <h3 className="font-medium">Rating Information</h3>
           <div className="space-y-1">
-            <p>Rating: {selectedCell || 0}</p>
-            <p>Severity: {getSeverity(selectedCell)}</p>
+            <p>Rating: {getScore()}</p>
+            <p>Severity: {getSeverity(getScore())}</p>
           </div>
         </div>
 
+        {/* Validation Dialog */}
+        <Dialog open={showValidationDialog} onOpenChange={setShowValidationDialog}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle className="text-red-500">Required Fields Missing</DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              <div className="space-y-2">
+                {validationErrors.map((error, index) => (
+                  <div key={index} className="flex items-start gap-2">
+                    <span className="text-red-500">•</span>
+                    <span>{error}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button 
+                onClick={() => setShowValidationDialog(false)}
+                className="w-full sm:w-auto"
+              >
+                Got it
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Action Buttons */}
         <div className="flex justify-end gap-4">
-          <Button variant="outline" onClick={() => navigate("/champion/risks")}>
+          <Button 
+            variant="outline" 
+            onClick={() => navigate("/champion/risks")}
+            disabled={isSubmitting}
+          >
             Cancel
           </Button>
-          <Button onClick={() => {
-            if (!selectedCell) {
-              toast({
-                title: "Error",
-                description: "Please select a risk rating",
-                variant: "destructive"
-              });
-              return;
-            }
-            toast({
-              title: "Success",
-              description: "Risk report submitted successfully"
-            });
-            navigate("/champion/risks");
-          }}>
-            Submit
+          <Button 
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Submitting..." : "Submit"}
           </Button>
         </div>
       </div>

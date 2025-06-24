@@ -1,11 +1,12 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { UserProvider } from "@/contexts/UserContext";
+import { Toaster as Sonner } from "sonner";
+import { type PropsWithChildren } from "react";
 
 import Login from "./pages/auth/Login";
-
 
 // Risk Champion Pages
 import RiskChampionLayout from "@/components/layout/RiskChampionLayout";
@@ -21,10 +22,10 @@ import Account from "@/pages/riskChampions/Account";
 // Risk Coordinator Pages
 import CoordinatorLayout from "@/components/layout/CoordinatorLayout";
 import Dashboard from "@/pages/riskCoordinator/Dashboard";
-import RegisterRisk from "@/pages/riskCoordinator/RegisterRisk";
+import CoordinatorRegisterRisk from "@/pages/riskCoordinator/RegisterRisk";
 import RiskChampions from "@/pages/riskCoordinator/RiskChampions";
-//import GenerateReportsPage from "@/pages/riskCoordinator/GenerateReportsPage";
-//import Notifications from "@/pages/riskCoordinator/Notifications";
+import GenerateReportsPage from "@/pages/riskCoordinator/GenerateReportsPage";
+import Notifications from "@/pages/riskCoordinator/Notifications";
 
 // Committee Pages
 import CommitteeLayout from "@/components/layout/CommitteeLayout";
@@ -43,13 +44,44 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
-      <Sonner />
       <BrowserRouter>
         <Routes>
            <Route path="/" element={<Login />} />
           
           {/* Risk Champion Routes */}
-           <Route path="/champion" element={<RiskChampionLayout />}>
+          {/*<Route path="/champion/dashboard" element={<ChampionDashboard />} />
+          <Route path="/champion/submit-risk" element={<SubmitRisk />} />*/}
+          
+          {/* Risk Coordinator Routes */}
+          <Route path="/coordinator" element={<CoordinatorLayout/>}>
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="risk-champions" element={<RiskChampions />} />
+          <Route path="generate-reports" element={<GenerateReportsPage />} />
+          <Route path="notifications" element={<Notifications />} />
+          </Route>
+          {/* Committee Routes */}
+          <Route path="/committee" element={<CommitteeLayout />}>
+            <Route path="dashboard" element={<CommitteeDashboard />} />
+            <Route path="risk-heatmap" element={<RiskHeatmap />} />
+          </Route>
+          
+          {/* DVC Routes */}
+           {/*<Route path="/dvc/dashboard" element={<DVCDashboard />} />*/}
+          
+          {/* Catch-all */}
+           {/*<Route path="*" element={<NotFound />} /> */}
+        </Routes>
+      </BrowserRouter>
+   </TooltipProvider>
+
+      <UserProvider>
+        <Toaster />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Login />} />
+            
+            {/* Risk Champion Routes */}
+            <Route path="/champion" element={<RiskChampionLayout />}>
               <Route path="dashboard" element={<RiskChampionDashboard />} />
               <Route path="risks" element={<Risks />} />
               <Route path="risks/:id" element={<ViewRisk />} />
@@ -59,30 +91,30 @@ const App = () => (
               <Route path="profile" element={<Profile />} />
               <Route path="account" element={<Account />} />
             </Route>
+            
+            {/* Risk Coordinator Routes */}
+            <Route path="/coordinator" element={<CoordinatorLayout />}>
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="register-risk" element={<CoordinatorRegisterRisk />} />
+              <Route path="risk-champions" element={<RiskChampions />} />
+              <Route path="generate-reports" element={<GenerateReportsPage />} />
+              <Route path="notifications" element={<Notifications />} />
+            </Route>
 
-          {/* Risk Coordinator Routes */}
-          <Route path="/coordinator" element={<CoordinatorLayout/>}>
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="register-risk" element={<RegisterRisk />} />
-          <Route path="risk-champions" element={<RiskChampions />} />
-             {/*<Route path="generate-reports" element={<GenerateReportsPage />} />
-              <Route path="notifications" element={<Notifications />} />*/}
-          </Route>
-
-          {/* Committee Routes */}
-<Route path="/committee" element={<CommitteeLayout />}>
+            {/* Committee Routes */}
+            <Route path="/committee" element={<CommitteeLayout />}>
               <Route path="dashboard" element={<CommitteeDashboard />} />
               <Route path="risk-heatmap" element={<RiskHeatmap />} />
-            </Route>   
-
-          {/* DVC Routes */}
-           {/*<Route path="/dvc/dashboard" element={<DVCDashboard />} />*/}
-          
-          {/* Catch-all */}
-           {/*<Route path="*" element={<NotFound />} /> */}
-        </Routes>
-      </BrowserRouter>
-   </TooltipProvider>
+            </Route>
+            
+            {/* DVC Routes */}
+            {/*<Route path="/dvc/dashboard" element={<DVCDashboard />} />*/}
+            
+            {/* Catch-all */}
+            {/*<Route path="*" element={<NotFound />} /> */}
+          </Routes>
+        </BrowserRouter>
+      </UserProvider>
   </QueryClientProvider>
 );
 
