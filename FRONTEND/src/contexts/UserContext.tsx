@@ -15,52 +15,33 @@ interface User {
 }
 
 interface UserContextType {
-  user: User | null;
-  setUser: (user: User | null) => void;
+  user: User;
   updateUser: (updates: Partial<User>) => void;
-  isLoading: boolean;
-  setIsLoading: (loading: boolean) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<User>({
+    name: "Angel Emmanuel",
+    email: "angel.emmanuel@udsm.ac.tz",
+    role: "Risk champion",
+    department: "ICT Department",
+    phone: "+255 123 456 789",
+    employeeId: "EMP123456",
+    joinedDate: "January 2023",
+    avatarUrl: null,
+    initials: "AE",
+    reportsSubmitted: 24,
+    activeRisks: 5,
+  });
 
   const updateUser = (updates: Partial<User>) => {
-    if (user) {
-      setUser(prev => prev ? { ...prev, ...updates } : null);
-    }
-  };
-
-  // Helper function to generate initials from name
-  const generateInitials = (name: string): string => {
-    return name
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase())
-      .join('')
-      .slice(0, 2);
-  };
-
-  // Function to set user data (typically called after login)
-  const setUserData = (userData: Omit<User, 'initials'>) => {
-    const userWithInitials: User = {
-      ...userData,
-      initials: generateInitials(userData.name)
-    };
-    setUser(userWithInitials);
-    setIsLoading(false);
+    setUser(prev => ({ ...prev, ...updates }));
   };
 
   return (
-    <UserContext.Provider value={{ 
-      user, 
-      setUser: setUserData, 
-      updateUser, 
-      isLoading, 
-      setIsLoading 
-    }}>
+    <UserContext.Provider value={{ user, updateUser }}>
       {children}
     </UserContext.Provider>
   );
@@ -72,4 +53,4 @@ export function useUser() {
     throw new Error('useUser must be used within a UserProvider');
   }
   return context;
-}
+} 

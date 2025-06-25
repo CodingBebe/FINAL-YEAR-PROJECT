@@ -44,9 +44,6 @@ const mockTrendData = [
 ];
 
 export default function RiskChampionDashboard() {
-  console.log("Champion dashboard loaded"); // 👈 Add this here
-
-
   const navigate = useNavigate();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
