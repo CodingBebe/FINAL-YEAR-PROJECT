@@ -1,11 +1,7 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerRisk = void 0;
-const sequelize_1 = require("sequelize");
-const Risk_1 = __importDefault(require("../models/Risk"));
+const Risk_1 = require("../models/Risk");
 const registerRisk = async (req, res) => {
     console.log("Incoming Risk Data:", req.body);
     try {
@@ -18,17 +14,11 @@ const registerRisk = async (req, res) => {
             return;
         }
         const prefix = strategicObjective.toUpperCase();
-        const existingCount = await Risk_1.default.count({
-            where: {
-                id: {
-                    [sequelize_1.Op.like]: `${prefix}%`,
-                },
-            },
-        });
+        const existingCount = await Risk_1.RiskModel.countDocuments({ id: { $regex: `^${prefix}` } });
         const generatedId = `${prefix}${existingCount + 1}`;
-        const newRisk = await Risk_1.default.create({
+        const newRisk = await Risk_1.RiskModel.create({
             id: generatedId,
-            strategicObjective: prefix, // Save the objective letter if it's in your DB
+            strategicObjective: prefix,
             title,
             riskId,
             description,

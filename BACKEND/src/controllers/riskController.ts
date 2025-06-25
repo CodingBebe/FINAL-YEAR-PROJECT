@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
-import { Op } from 'sequelize';
-import Risk from '../models/Risk';
+import { RiskModel } from '../models/Risk';
 
 export const registerRisk = async (req: Request, res: Response): Promise<void> => {
   console.log("Incoming Risk Data:", req.body);
@@ -31,20 +30,12 @@ export const registerRisk = async (req: Request, res: Response): Promise<void> =
     }
 
     const prefix = strategicObjective.toUpperCase();
-
-    const existingCount = await Risk.count({
-      where: {
-        id: {
-          [Op.like]: `${prefix}%`,
-        },
-      },
-    });
-
+    const existingCount = await RiskModel.countDocuments({ id: { $regex: `^${prefix}` } });
     const generatedId = `${prefix}${existingCount + 1}`;
 
-    const newRisk = await Risk.create({
+    const newRisk = await RiskModel.create({
       id: generatedId,
-      strategicObjective: prefix, // Save the objective letter if it's in your DB
+      strategicObjective: prefix,
       title,
       riskId,
       description,

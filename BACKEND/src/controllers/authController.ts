@@ -29,12 +29,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Find user in database (with password for comparison)
-   // const user = await UserModel.scope('withPassword').findOne({ 
-     // where: { email: email.toLowerCase() } });
-    
-    const user = await UserModel.scope('withPassword').findOne({ where: { email } });
-     if (!user) {
+    const user = await UserModel.findOne({ email: email.toLowerCase() });
+    if (!user) {
       res.status(401).json({ 
         success: false,
         message: 'Invalid email or password' 
@@ -43,7 +39,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     // Check if password is correct
-    const isPasswordValid = await user.checkPassword(password);
+    const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
       res.status(401).json({ 
         success: false,
@@ -55,7 +51,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     // Generate JWT token
     const token = jwt.sign(
       { 
-        id: user.id, 
+        id: user._id, 
         email: user.email, 
         role: user.role 
       },
@@ -70,7 +66,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       token,
         role: user.role, 
       user: {
-        id: user.id,
+        id: user._id,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
@@ -117,10 +113,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Check if user already exists
-    const existingUser = await UserModel.findOne({ 
-      where: { email: email.toLowerCase() } 
-    });
+    const existingUser = await UserModel.findOne({ email: email.toLowerCase() });
     if (existingUser) {
       res.status(409).json({ 
         success: false,
@@ -136,13 +129,13 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       firstName,
       lastName,
       role: role || 'champion', // default role
-  unit_id: null // Set this based on your requirements
+      unit_id: null // Set this based on your requirements
     });
 
     // Generate JWT token
     const token = jwt.sign(
       { 
-        id: newUser.id, 
+        id: newUser._id, 
         email: newUser.email, 
         role: newUser.role 
       },
@@ -156,7 +149,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       message: 'User registered successfully',
       token,
       user: {
-        id: newUser.id,
+        id: newUser._id,
         email: newUser.email,
         firstName: newUser.firstName,
         lastName: newUser.lastName,
@@ -195,7 +188,7 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
 export const getProfile = async (req: Request, res: Response): Promise<void> => {
   try {
     // Assuming you have middleware that adds user to req
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?._id;
     
     if (!userId) {
       res.status(401).json({ 
@@ -205,7 +198,7 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    const user = await UserModel.findByPk(userId);
+    const user = await UserModel.findById(userId);
     if (!user) {
       res.status(404).json({ 
         success: false,
@@ -217,7 +210,7 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
     res.status(200).json({
       success: true,
       user: {
-        id: user.id,
+        id: user._id,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,

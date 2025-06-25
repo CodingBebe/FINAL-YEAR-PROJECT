@@ -1,12 +1,10 @@
-import { DataTypes, Model, Optional } from 'sequelize';
-import { sequelize } from '../config/database';
+import mongoose, { Document, Schema } from 'mongoose';
 
-// Define TypeScript interface for Risk attributes
-interface RiskAttributes {
+export interface Risk extends Document {
   id: string;
   title: string;
   riskId?: string;
-  strategicObjective: string; 
+  strategicObjective: string;
   description?: string;
   principalOwner?: string;
   supportingOwners?: string[];
@@ -21,84 +19,32 @@ interface RiskAttributes {
   updatedAt?: Date;
 }
 
-// Allow optional fields when creating
-interface RiskCreationAttributes extends Optional<RiskAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
+const RiskSchema = new Schema<Risk>({
+  id: { type: String, required: true, unique: true },
+  title: { type: String, required: true },
+  riskId: { type: String },
+  strategicObjective: { type: String, required: true },
+  description: { type: String },
+  principalOwner: { type: String },
+  supportingOwners: [{ type: String }],
+  category: { type: String },
+  likelihood: { type: String },
+  impact: { type: String },
+  causes: { type: String },
+  consequences: { type: String },
+  existingControls: { type: String },
+  proposedMitigation: { type: String },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+});
 
-class Risk extends Model<RiskAttributes, RiskCreationAttributes> implements RiskAttributes {
-  public id!: string;
-  public title!: string;
-  public riskId!: string;
-  public strategicObjective!: string;
-  public description!: string;
-  public principalOwner!: string;
-  public supportingOwners!: string[];
-  public category!: string;
-  public likelihood!: string;
-  public impact!: string;
-  public causes!: string;
-  public consequences!: string;
-  public existingControls!: string;
-  public proposedMitigation!: string;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+RiskSchema.pre('save', function (next) {
+  this.updatedAt = new Date();
+  next();
+});
+
+export const RiskModel = mongoose.models.Risk || mongoose.model<Risk>('Risk', RiskSchema);
+
+export async function countRisksByPrefix(db: mongoose.Connection, prefix: string) {
+  return await RiskModel.countDocuments({ id: { $regex: `^${prefix}` } });
 }
-
-Risk.init(
-  {
-    id: {
-      type: DataTypes.INTEGER.UNSIGNED,
-      autoIncrement: true,
-      primaryKey: true,
-      allowNull: false,
-    },
-    title: DataTypes.STRING,
-    riskId: {
-      type: DataTypes.STRING,
-      field: 'risk_id',
-    },
-    strategicObjective: {
-  type: DataTypes.STRING,
-  field: 'strategic_objective',
-},
-
-    description: DataTypes.TEXT,
-    principalOwner: {
-      type: DataTypes.STRING,
-      field: 'principal_owner',
-    },
-    supportingOwners: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-      field: 'supporting_owners',
-    },
-    category: DataTypes.STRING,
-    likelihood: DataTypes.STRING,
-    impact: DataTypes.STRING,
-    causes: DataTypes.TEXT,
-    consequences: DataTypes.TEXT,
-    existingControls: {
-      type: DataTypes.TEXT,
-      field: 'existing_controls',
-    },
-    proposedMitigation: {
-      type: DataTypes.TEXT,
-      field: 'proposed_mitigation',
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      field: 'created_at',
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      field: 'updated_at',
-    },
-  },
-  {
-    sequelize,
-    modelName: 'Risk',
-    tableName: 'risks',
-    underscored: true,
-    timestamps: true,
-  }
-);
-
-export default Risk;

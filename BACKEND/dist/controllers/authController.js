@@ -29,10 +29,7 @@ const login = async (req, res) => {
             });
             return;
         }
-        // Find user in database (with password for comparison)
-        // const user = await UserModel.scope('withPassword').findOne({ 
-        // where: { email: email.toLowerCase() } });
-        const user = await User_1.UserModel.scope('withPassword').findOne({ where: { email } });
+        const user = await User_1.UserModel.findOne({ email: email.toLowerCase() });
         if (!user) {
             res.status(401).json({
                 success: false,
@@ -41,7 +38,7 @@ const login = async (req, res) => {
             return;
         }
         // Check if password is correct
-        const isPasswordValid = await user.checkPassword(password);
+        const isPasswordValid = await user.comparePassword(password);
         if (!isPasswordValid) {
             res.status(401).json({
                 success: false,
@@ -51,7 +48,7 @@ const login = async (req, res) => {
         }
         // Generate JWT token
         const token = jsonwebtoken_1.default.sign({
-            id: user.id,
+            id: user._id,
             email: user.email,
             role: user.role
         }, JWT_SECRET, { expiresIn: '24h' });
@@ -62,7 +59,7 @@ const login = async (req, res) => {
             token,
             role: user.role,
             user: {
-                id: user.id,
+                id: user._id,
                 email: user.email,
                 firstName: user.firstName,
                 lastName: user.lastName,
@@ -106,10 +103,7 @@ const register = async (req, res) => {
             });
             return;
         }
-        // Check if user already exists
-        const existingUser = await User_1.UserModel.findOne({
-            where: { email: email.toLowerCase() }
-        });
+        const existingUser = await User_1.UserModel.findOne({ email: email.toLowerCase() });
         if (existingUser) {
             res.status(409).json({
                 success: false,
@@ -128,7 +122,7 @@ const register = async (req, res) => {
         });
         // Generate JWT token
         const token = jsonwebtoken_1.default.sign({
-            id: newUser.id,
+            id: newUser._id,
             email: newUser.email,
             role: newUser.role
         }, JWT_SECRET, { expiresIn: '24h' });
@@ -138,7 +132,7 @@ const register = async (req, res) => {
             message: 'User registered successfully',
             token,
             user: {
-                id: newUser.id,
+                id: newUser._id,
                 email: newUser.email,
                 firstName: newUser.firstName,
                 lastName: newUser.lastName,
@@ -179,7 +173,7 @@ const getProfile = async (req, res) => {
     var _a;
     try {
         // Assuming you have middleware that adds user to req
-        const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+        const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a._id;
         if (!userId) {
             res.status(401).json({
                 success: false,
@@ -187,7 +181,7 @@ const getProfile = async (req, res) => {
             });
             return;
         }
-        const user = await User_1.UserModel.findByPk(userId);
+        const user = await User_1.UserModel.findById(userId);
         if (!user) {
             res.status(404).json({
                 success: false,
@@ -198,7 +192,7 @@ const getProfile = async (req, res) => {
         res.status(200).json({
             success: true,
             user: {
-                id: user.id,
+                id: user._id,
                 email: user.email,
                 firstName: user.firstName,
                 lastName: user.lastName,
