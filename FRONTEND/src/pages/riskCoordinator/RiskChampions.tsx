@@ -35,7 +35,7 @@ const RiskChampionsPage = () => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold">Risk Champions</h1>
-          <p className="text-gray-500">Manage department risk champions</p>
+          <p className="text-gray-500">Manage Units' risk champions</p>
         </div>
         <Button className="bg-blue-700 hover:bg-blue-800" onClick={() => setShowForm(true)}>
           + Add Risk Champion
@@ -66,7 +66,7 @@ const RiskChampionsPage = () => {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-xl font-semibold">Risk Champions</h2>
-              <p className="text-gray-500 text-sm">Manage department risk champions and their responsibilities</p>
+              <p className="text-gray-500 text-sm">Manage Units' risk champions and their responsibilities</p>
             </div>
             <Input
               className="w-64"
@@ -80,7 +80,7 @@ const RiskChampionsPage = () => {
               <thead>
                 <tr className="border-b">
                   <th className="py-2 px-4 text-left font-medium text-gray-600">Champion</th>
-                  <th className="py-2 px-4 text-left font-medium text-gray-600">Department</th>
+                  <th className="py-2 px-4 text-left font-medium text-gray-600">Unit</th>
                   <th className="py-2 px-4 text-left font-medium text-gray-600">Risks Submitted</th>
                   <th className="py-2 px-4 text-left font-medium text-gray-600">Completion Rate</th>
                   <th className="py-2 px-4 text-left font-medium text-gray-600">Status</th>
@@ -101,7 +101,7 @@ const RiskChampionsPage = () => {
                         <div className="text-xs text-gray-500">{champ.email}</div>
                       </div>
                     </td>
-                    <td className="py-2 px-4">{champ.department}</td>
+                    <td className="py-2 px-4">{champ.unit}</td>
                     <td className="py-2 px-4">{champ.risks}</td>
                     <td className="py-2 px-4">{champ.completion}%</td>
                     <td className="py-2 px-4">

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -34,12 +33,15 @@ const handleLogin = async (e: React.FormEvent) => {
       // Optionally store user
       localStorage.setItem("user", JSON.stringify(data));
 
-      // Redirect based on role
-      switch (data.role) {
+      // Redirect based on role (robust to both data.user.role and data.role)
+      const userRole = (data.user?.role || data.role || '').toLowerCase();
+      switch (userRole) {
         case "risk_coordinator":
+        case "coordinator":
           navigate("/coordinator/dashboard");
           break;
         case "risk_champion":
+        case "champion":
           navigate("/champion/dashboard");
           break;
         case "committee":
