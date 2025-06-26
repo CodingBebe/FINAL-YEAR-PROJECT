@@ -24,7 +24,7 @@ import CoordinatorLayout from "@/components/layout/CoordinatorLayout";
 import Dashboard from "@/pages/riskCoordinator/Dashboard";
 import CoordinatorRegisterRisk from "@/pages/riskCoordinator/RegisterRisk";
 import RiskChampions from "@/pages/riskCoordinator/RiskChampions";
-import GenerateReportsPage from "@/pages/riskCoordinator/GenerateReportsPage";
+import GenerateReports from "@/pages/riskCoordinator/GenerateReports";
 import Notifications from "@/pages/riskCoordinator/Notifications";
 
 // Committee Pages
@@ -56,7 +56,7 @@ const App = () => (
           <Route path="/coordinator" element={<CoordinatorLayout/>}>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="risk-champions" element={<RiskChampions />} />
-          <Route path="generate-reports" element={<GenerateReportsPage />} />
+          <Route path="generate-reports" element={<GenerateReports />} />
           <Route path="notifications" element={<Notifications />} />
           </Route>
           {/* Committee Routes */}
@@ -97,7 +97,7 @@ const App = () => (
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="register-risk" element={<CoordinatorRegisterRisk />} />
               <Route path="risk-champions" element={<RiskChampions />} />
-              <Route path="generate-reports" element={<GenerateReportsPage />} />
+              <Route path="generate-reports" element={<GenerateReports />} />
               <Route path="notifications" element={<Notifications />} />
             </Route>
 

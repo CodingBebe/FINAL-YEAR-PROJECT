@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-const departments = [
+const units = [
  "DHRMA", "DSS", "UH",
  "DPGS", "DUS", "DES", "Principals",
  "Deans",  "Directors",
@@ -24,8 +24,9 @@ const RiskChampionRegistrationForm = ({ onRegister }) => {
     firstName: "",
     lastName: "",
     email: "",
-    department: "",
+    unit: "",
     phone: "",
+    password: "",
   });
 
   const handleChange = (e) => {
@@ -35,7 +36,7 @@ const RiskChampionRegistrationForm = ({ onRegister }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     onRegister(form);
-    setForm({ firstName: "", lastName: "", email: "", department: "", phone: "" });
+    setForm({ firstName: "", lastName: "", email: "", unit: "", phone: "", password: "" });
   };
 
   return (
@@ -60,16 +61,16 @@ const RiskChampionRegistrationForm = ({ onRegister }) => {
         />
       </div>
       <div>
-        <Label>Department</Label>
+        <Label>Unit</Label>
         <select
-          name="department"
-          value={form.department}
+          name="unit"
+          value={form.unit}
           onChange={handleChange}
           required
           className="w-full border rounded px-3 py-2"
         >
-          <option value="">Select department</option>
-          {departments.map((dept) => (
+          <option value="">Select Unit</option>
+          {units.map((dept) => (
             <option key={dept} value={dept}>{dept}</option>
           ))}
         </select>
@@ -77,6 +78,17 @@ const RiskChampionRegistrationForm = ({ onRegister }) => {
       <div>
         <Label>Phone Number</Label>
         <Input name="phone" value={form.phone} onChange={handleChange} required />
+      </div>
+      <div>
+        <Label>Password</Label>
+        <Input
+          name="password"
+          type="password"
+          value={form.password}
+          onChange={handleChange}
+          required
+          placeholder="Set password for champion"
+        />
       </div>
       <Button type="submit">Register</Button>
     </form>
