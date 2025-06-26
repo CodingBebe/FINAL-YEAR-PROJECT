@@ -1,4 +1,4 @@
-import { initializeDatabase } from './config/init';
+import { connectToDatabase } from './config/database';
 import express from 'express';
 import cors from "cors";
 import authRouter from "./routes/auth";
@@ -18,9 +18,12 @@ app.get("/", (req, res) => {
 app.use("/api", authRouter);
 app.use('/api/risks', riskRoutes);
 
+
+console.log(process.env.MONGODB_URI);
+
 // Initialize database before starting server
-initializeDatabase().then(() => {
-    app.listen(PORT, () => {
+connectToDatabase().then(() => {
+  app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
 });
