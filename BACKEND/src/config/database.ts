@@ -2,7 +2,10 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const mongoUri = process.env.MONGODB_URI || 'mongodb+srv://admin:fyprmis@udsm-rmis-project.mb0x3dm.mongodb.net/?retryWrites=true&w=majority&appName=UDSM-RMIS-PROJECT';
+const mongoUri = process.env.MONGODB_URI;
+if (!mongoUri) {
+  throw new Error('MONGODB_URI not set in environment variables.');
+}
 
 export const connectToDatabase = async () => {
   try {
@@ -10,7 +13,7 @@ export const connectToDatabase = async () => {
     console.log('✅ Connected to MongoDB Atlas with Mongoose.');
   } catch (error) {
     console.error('❌ MongoDB connection error:', error);
-    throw error;
+    process.exit(1); // Stop the app if DB fails
   }
 };
 

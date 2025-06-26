@@ -7,7 +7,10 @@ exports.closeDatabase = exports.connectToDatabase = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-const mongoUri = process.env.MONGODB_URI || 'mongodb+srv://admin:fyprmis@udsm-rmis-project.mb0x3dm.mongodb.net/?retryWrites=true&w=majority&appName=UDSM-RMIS-PROJECT';
+const mongoUri = process.env.MONGODB_URI;
+if (!mongoUri) {
+    throw new Error('MONGODB_URI not set in environment variables.');
+}
 const connectToDatabase = async () => {
     try {
         await mongoose_1.default.connect(mongoUri);
@@ -15,7 +18,7 @@ const connectToDatabase = async () => {
     }
     catch (error) {
         console.error('❌ MongoDB connection error:', error);
-        throw error;
+        process.exit(1); // Stop the app if DB fails
     }
 };
 exports.connectToDatabase = connectToDatabase;

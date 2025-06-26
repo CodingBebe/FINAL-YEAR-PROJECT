@@ -1,16 +1,24 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.closeDatabase = exports.initializeDatabase = void 0;
-const database_1 = require("./database");
-Object.defineProperty(exports, "closeDatabase", { enumerable: true, get: function () { return database_1.closeDatabase; } });
+exports.initializeDatabase = void 0;
+const mongoose_1 = __importDefault(require("mongoose"));
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
 const initializeDatabase = async () => {
+    const mongoUri = process.env.MONGODB_URI;
+    if (!mongoUri) {
+        throw new Error("MONGODB_URI not set in environment variables.");
+    }
     try {
-        await (0, database_1.connectToDatabase)();
-        // You can add any MongoDB-specific initialization here if needed
+        await mongoose_1.default.connect(mongoUri);
+        console.log("✅ Connected to MongoDB Atlas");
     }
     catch (error) {
-        console.error('❌ Failed to initialize MongoDB:', error);
-        process.exit(1);
+        console.error("❌ MongoDB connection error:", error);
+        process.exit(1); // Stop the app if DB fails
     }
 };
 exports.initializeDatabase = initializeDatabase;
