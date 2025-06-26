@@ -4,7 +4,7 @@ interface User {
   name: string;
   email: string;
   role: string;
-  department: string;
+  unit: string;
   phone: string;
   employeeId: string;
   joinedDate: string;
@@ -26,7 +26,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     name: "Angel Emmanuel",
     email: "angel.emmanuel@udsm.ac.tz",
     role: "Risk champion",
-    department: "ICT Department",
+    unit: "ICT Unit",
     phone: "+255 123 456 789",
     employeeId: "EMP123456",
     joinedDate: "January 2023",

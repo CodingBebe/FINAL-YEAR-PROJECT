@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getProfile = exports.logout = exports.register = exports.login = void 0;
+exports.registerRiskChampion = exports.getProfile = exports.logout = exports.register = exports.login = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const User_1 = require("../models/User");
 const emailValidator_1 = require("../utils/emailValidator");
@@ -79,9 +79,9 @@ exports.login = login;
 // Register function
 const register = async (req, res) => {
     try {
-        const { email, password, firstName, lastName, role } = req.body;
+        const { email, password, firstName, lastName, role, unit } = req.body;
         // Validate required fields
-        if (!email || !password || !firstName || !lastName) {
+        if (!email || !password || !firstName || !lastName || !unit) {
             res.status(400).json({
                 success: false,
                 message: 'All fields are required',
@@ -89,7 +89,8 @@ const register = async (req, res) => {
                     email: !email ? 'Email is required' : null,
                     password: !password ? 'Password is required' : null,
                     firstName: !firstName ? 'First name is required' : null,
-                    lastName: !lastName ? 'Last name is required' : null
+                    lastName: !lastName ? 'Last name is required' : null,
+                    unit: !unit ? 'Unit is required' : null
                 }
             });
             return;
@@ -118,7 +119,7 @@ const register = async (req, res) => {
             firstName,
             lastName,
             role: role || 'champion', // default role
-            unit_id: null // Set this based on your requirements
+            unit_id: unit,
         });
         // Generate JWT token
         const token = jsonwebtoken_1.default.sign({
@@ -209,3 +210,72 @@ const getProfile = async (req, res) => {
     }
 };
 exports.getProfile = getProfile;
+// Register Risk Champion function
+const registerRiskChampion = async (req, res) => {
+    try {
+        const { email, password, firstName, lastName, unit, phone } = req.body;
+        // Validate required fields
+        if (!email || !password || !firstName || !lastName || !unit) {
+            res.status(400).json({
+                success: false,
+                message: 'All fields are required',
+                errors: {
+                    email: !email ? 'Email is required' : null,
+                    password: !password ? 'Password is required' : null,
+                    firstName: !firstName ? 'First name is required' : null,
+                    lastName: !lastName ? 'Last name is required' : null,
+                    unit: !unit ? 'Unit is required' : null
+                }
+            });
+            return;
+        }
+        // Validate email format
+        const emailValidation = (0, emailValidator_1.validateUDSMEmail)(email);
+        if (!emailValidation.isValid) {
+            res.status(400).json({
+                success: false,
+                message: emailValidation.message
+            });
+            return;
+        }
+        const existingUser = await User_1.UserModel.findOne({ email: email.toLowerCase() });
+        if (existingUser) {
+            res.status(409).json({
+                success: false,
+                message: 'User with this email already exists'
+            });
+            return;
+        }
+        // Create new risk champion (password will be automatically hashed by the hook)
+        const newUser = await User_1.UserModel.create({
+            email: email.toLowerCase(),
+            password,
+            firstName,
+            lastName,
+            role: 'champion',
+            unit_id: unit,
+            phone,
+        });
+        res.status(201).json({
+            success: true,
+            message: 'Risk champion registered successfully',
+            user: {
+                id: newUser._id,
+                email: newUser.email,
+                firstName: newUser.firstName,
+                lastName: newUser.lastName,
+                role: newUser.role,
+                unit_id: newUser.unit_id,
+                phone: newUser.phone,
+            }
+        });
+    }
+    catch (error) {
+        console.error('Risk champion registration error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+};
+exports.registerRiskChampion = registerRiskChampion;

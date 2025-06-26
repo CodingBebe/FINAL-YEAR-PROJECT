@@ -56,6 +56,7 @@ const App = () => (
           <Route path="/coordinator" element={<CoordinatorLayout/>}>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="risk-champions" element={<RiskChampions />} />
+          <Route path="register-risk" element={<CoordinatorRegisterRisk />} />
           <Route path="generate-reports" element={<GenerateReports />} />
           <Route path="notifications" element={<Notifications />} />
           </Route>
@@ -95,8 +96,8 @@ const App = () => (
             {/* Risk Coordinator Routes */}
             <Route path="/coordinator" element={<CoordinatorLayout />}>
               <Route path="dashboard" element={<Dashboard />} />
-              <Route path="register-risk" element={<CoordinatorRegisterRisk />} />
               <Route path="risk-champions" element={<RiskChampions />} />
+              <Route path="register-risk" element={<CoordinatorRegisterRisk />} />
               <Route path="generate-reports" element={<GenerateReports />} />
               <Route path="notifications" element={<Notifications />} />
             </Route>

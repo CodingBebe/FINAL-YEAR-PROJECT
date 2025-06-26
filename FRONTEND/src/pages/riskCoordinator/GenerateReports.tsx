@@ -13,20 +13,20 @@ const REPORT_TYPES = [
   { key: "quarterlyPerformance", label: "Quarterly Performance", description: "Quarterly risk management report" },
 ];
 
-const DEPARTMENTS = ["All Departments", "Finance", "HR", "IT", "Operations"];
+const UNITS = ["All Units", "Finance", "HR", "IT", "Operations"];
 const DATE_RANGES = ["Current Quarter", "Last Quarter", "Year to Date"];
 const STATUSES = ["All Statuses", "Open", "Closed", "In Progress"];
 const FORMATS = ["PDF Document", "Excel Spreadsheet", "CSV File"];
 
 const RECENT_REPORTS = [
   { title: "Q2 2024 Risk Register", date: "May 15, 2024", format: "PDF" },
-  { title: "Department Compliance Report", date: "Apr 28, 2024", format: "Excel" },
+  { title: "Unit Compliance Report", date: "Apr 28, 2024", format: "Excel" },
   { title: "Risk Trend Analysis", date: "Mar 12, 2024", format: "PDF" },
 ];
 
 export default function GenerateReportsPage() {
   const [reportType, setReportType] = useState(REPORT_TYPES[0]);
-  const [department, setDepartment] = useState(DEPARTMENTS[0]);
+  const [unit, setUnit] = useState(UNITS[0]);
   const [dateRange, setDateRange] = useState(DATE_RANGES[0]);
   const [status, setStatus] = useState(STATUSES[0]);
   const [format, setFormat] = useState(FORMATS[0]);
@@ -68,12 +68,12 @@ export default function GenerateReportsPage() {
               <TabsContent value="filters">
                 <div className="flex flex-col md:flex-row gap-4">
                   <div className="flex-1">
-                    <label className="block mb-1 text-sm font-medium">Department</label>
-                    <Select value={department} onValueChange={setDepartment}>
-                      <SelectTrigger><SelectValue placeholder="Select department" /></SelectTrigger>
+                    <label className="block mb-1 text-sm font-medium">Unit</label>
+                    <Select value={unit} onValueChange={setUnit}>
+                      <SelectTrigger><SelectValue placeholder="Select unit" /></SelectTrigger>
                       <SelectContent>
-                        {DEPARTMENTS.map(dep => (
-                          <SelectItem key={dep} value={dep}>{dep}</SelectItem>
+                        {UNITS.map(unit => (
+                          <SelectItem key={unit} value={unit}>{unit}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -125,7 +125,7 @@ export default function GenerateReportsPage() {
           </CardHeader>
           <CardContent className="space-y-2">
             <div><span className="font-semibold">Report Type:</span> {reportType.label}</div>
-            <div><span className="font-semibold">Department:</span> {department}</div>
+            <div><span className="font-semibold">Unit:</span> {unit}</div>
             <div><span className="font-semibold">Format:</span> {format.split(" ")[0]}</div>
             <div><span className="font-semibold">Risk Count:</span> {riskCount}</div>
             <Button className="w-full mt-4"><span role="img" aria-label="download">⬇️</span> Generate Report</Button>

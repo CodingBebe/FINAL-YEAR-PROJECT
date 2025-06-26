@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const units = [
  "DHRMA", "DSS", "UH",
@@ -28,15 +30,23 @@ const RiskChampionRegistrationForm = ({ onRegister }) => {
     phone: "",
     password: "",
   });
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onRegister(form);
-    setForm({ firstName: "", lastName: "", email: "", unit: "", phone: "", password: "" });
+    try {
+      await onRegister(form);
+      toast({ title: "Risk champion registration successful" });
+      navigate("/coordinator/risk-champions");
+      setForm({ firstName: "", lastName: "", email: "", unit: "", phone: "", password: "" });
+    } catch (error) {
+      toast({ title: "Registration failed", description: error.message, variant: "destructive" });
+    }
   };
 
   return (
@@ -69,9 +79,9 @@ const RiskChampionRegistrationForm = ({ onRegister }) => {
           required
           className="w-full border rounded px-3 py-2"
         >
-          <option value="">Select Unit</option>
-          {units.map((dept) => (
-            <option key={dept} value={dept}>{dept}</option>
+          <option value="">Select unit</option>
+          {units.map((unit) => (
+            <option key={unit} value={unit}>{unit}</option>
           ))}
         </select>
       </div>
