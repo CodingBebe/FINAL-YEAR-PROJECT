@@ -191,11 +191,14 @@ const RiskChampionsPage = () => {
                       <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-medium">{champ.status}</span>
                     </td>
                     <td className="py-2 px-4 text-center" style={{ position: "relative" }}>
-                      <button className="text-gray-400 hover:text-gray-600" onClick={() => {
-                        setShowActionsIdx(idx);
-                        setSelectedChampion(champ);
-                      }}>
-                        <span className="text-xl">View </span>
+                      <button
+                        className="bg-blue-50 text-blue-700 rounded-xl px-4 py-2 font-medium shadow-sm hover:bg-blue-100 border border-blue-100 transition"
+                        onClick={() => {
+                          setShowActionsIdx(idx);
+                          setSelectedChampion(champ);
+                        }}
+                      >
+                        View
                       </button>
                       {showActionsIdx === idx && (
                         <div ref={actionsMenuRef} className="absolute bg-white border rounded shadow-lg mt-2 right-0 z-10">
