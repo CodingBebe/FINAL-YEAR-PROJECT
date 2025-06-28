@@ -2,7 +2,23 @@ import { useState, useEffect, useRef } from "react";
 import RiskChampionRegistrationForm from "@/components/form/RiskChampionRegistrationForm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
+
+const units = [
+ "DHRMA", "DSS", "UH",
+ "DPGS", "DUS", "DES", "Principals",
+ "Deans",  "Directors",
+ "DRP", "DPS", 
+ "IPMO", "DIEN", 
+ "TDTC","DSS/Commandant Auxiliary Police",
+ "DoSS","SoAF",
+ "CoNAS","CoET", 
+ "Auxiliary Police","DICT", 
+ "DLS",  "PMU", 
+ "QAU","DoF", 
+ "CCC & STC",
+ "DPDI","DICA","CMU", 
+];
 
 const RiskChampionsPage = () => {
   const [showForm, setShowForm] = useState(false);
@@ -15,8 +31,6 @@ const RiskChampionsPage = () => {
   const [selectedChampion, setSelectedChampion] = useState(null);
   const [newUnit, setNewUnit] = useState("");
   const actionsMenuRef = useRef(null);
-
-  const { toast } = useToast();
 
   useEffect(() => {
     async function fetchChampions() {
@@ -83,8 +97,9 @@ const RiskChampionsPage = () => {
         }))
       );
       setShowForm(false);
+      toast.success("Risk champion registered successfully");
     } catch (error) {
-      toast({ title: "Registration failed", description: error.message, variant: "destructive" });
+      toast.error(error.message);
     }
   };
 
@@ -222,25 +237,41 @@ const RiskChampionsPage = () => {
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
             <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-2xl" onClick={() => setShowUpdateModal(false)}>&times;</button>
             <h2 className="text-xl font-semibold mb-4">Update Unit</h2>
-            <Input value={newUnit} onChange={e => setNewUnit(e.target.value)} placeholder="Enter new unit" className="mb-4" />
+            <select
+              value={newUnit}
+              onChange={e => setNewUnit(e.target.value)}
+              className="w-full border rounded px-3 py-2 mb-4"
+            >
+              <option value="">Select unit</option>
+              {units.map((unit) => (
+                <option key={unit} value={unit}>{unit}</option>
+              ))}
+            </select>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowUpdateModal(false)}>Cancel</Button>
               <Button onClick={async () => {
                 try {
-                  const response = await fetch(`http://localhost:3000/api/risk-champions/${selectedChampion.id}`, {
+                  console.log("Updating champion:", selectedChampion._id, "with unit:", newUnit);
+                  const response = await fetch(`http://localhost:3000/api/risk-champions/${selectedChampion._id}`, {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ unit_id: newUnit }),
                   });
-                  if (!response.ok) throw new Error("Failed to update unit");
+                  
+                  if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || "Failed to update unit");
+                  }
+                  
                   setShowUpdateModal(false);
                   // Refresh champions
                   const championsResponse = await fetch("http://localhost:3000/api/risk-champions");
                   const data = await championsResponse.json();
                   setChampions(data.users.map(user => ({ ...user, unit: user.unit_id || user.unit || "", risks: 0, completion: 0, status: "Active", avatar: "https://randomuser.me/api/portraits/lego/1.jpg" })));
-                  toast({ title: "Unit updated successfully" });
+                  toast.success("Unit updated successfully");
                 } catch (error) {
-                  toast({ title: "Update failed", description: error.message, variant: "destructive" });
+                  console.error("Update error:", error);
+                  toast.error(error.message);
                 }
               }}>Update</Button>
             </div>
@@ -258,18 +289,25 @@ const RiskChampionsPage = () => {
               <Button variant="outline" onClick={() => setShowDeleteModal(false)}>Cancel</Button>
               <Button variant="destructive" onClick={async () => {
                 try {
-                  const response = await fetch(`http://localhost:3000/api/risk-champions/${selectedChampion.id}`, {
+                  console.log("Deleting champion:", selectedChampion._id);
+                  const response = await fetch(`http://localhost:3000/api/risk-champions/${selectedChampion._id}`, {
                     method: "DELETE"
                   });
-                  if (!response.ok) throw new Error("Failed to delete champion");
+                  
+                  if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || "Failed to delete champion");
+                  }
+                  
                   setShowDeleteModal(false);
                   // Refresh champions
                   const championsResponse = await fetch("http://localhost:3000/api/risk-champions");
                   const data = await championsResponse.json();
                   setChampions(data.users.map(user => ({ ...user, unit: user.unit_id || user.unit || "", risks: 0, completion: 0, status: "Active", avatar: "https://randomuser.me/api/portraits/lego/1.jpg" })));
-                  toast({ title: "Champion deleted successfully" });
+                  toast.success("Champion deleted successfully");
                 } catch (error) {
-                  toast({ title: "Delete failed", description: error.message, variant: "destructive" });
+                  console.error("Delete error:", error);
+                  toast.error(error.message);
                 }
               }}>Delete</Button>
             </div>

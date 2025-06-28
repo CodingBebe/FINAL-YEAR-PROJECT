@@ -3,9 +3,9 @@ import bcrypt from 'bcryptjs';
 
 export type UserRole =
   | 'admin'
-  | 'risk_coordinator'
-  | 'steering committe'
-  | 'risk_champion'
+  | 'coordinator'
+  | 'committee'
+  | 'champion'
   | 'deputy_vice_chancellor'
   | 'vice_chancellor';
 
