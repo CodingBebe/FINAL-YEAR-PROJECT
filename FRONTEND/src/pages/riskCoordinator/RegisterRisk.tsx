@@ -60,6 +60,7 @@ const RegisterRiskPage = () => {
   }, []);
 
   const handleViewRisk = (risk) => {
+    console.log('Selected risk for details modal:', risk);
     setSelectedRisk(risk);
     setIsModalOpen(true);
   };

@@ -11,6 +11,7 @@ export interface Risk extends Document {
   category?: string;
   likelihood?: string;
   impact?: string;
+  rating?: number;
   causes?: string;
   consequences?: string;
   existingControls?: string;
@@ -30,6 +31,7 @@ const RiskSchema = new Schema<Risk>({
   category: { type: String },
   likelihood: { type: String },
   impact: { type: String },
+  rating: { type: Number },
   causes: { type: String },
   consequences: { type: String },
   existingControls: { type: String },
