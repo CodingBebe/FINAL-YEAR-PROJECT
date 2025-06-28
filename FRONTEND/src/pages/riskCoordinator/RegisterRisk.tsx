@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import RiskRegistrationForm from "@/components/form/RiskRegistrationForm";
 import RiskDetailsModal from "@/components/modals/RiskDetailsModal";
 import { Button } from "@/components/ui/button";
@@ -40,24 +40,24 @@ const RegisterRiskPage = () => {
   const [status, setStatus] = useState(STATUSES[0]);
   const [selectedRisk, setSelectedRisk] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [risks, setRisks] = useState([
-    {
-      id: "RISK-2024-001",
-      title: "Insufficient IT Infrastructure for Online Learning",
-      owner: "Dr. Sarah Johnson",
-      category: "ICT",
-      description: "The current IT infrastructure may not be sufficient to support the increasing demand for online learning platforms, particularly during peak usage periods. This could lead to system slowdowns, connection issues, and potential service disruptions affecting both students and faculty.",
-      department: "DICT",
-      status: "Open",
-      rating: 7,
-      severity: "High",
-      lastUpdated: "2024-03-15",
-      impact: "High impact on academic delivery and student experience. Could affect thousands of students and faculty members, potentially disrupting academic activities and damaging institutional reputation.",
-      likelihood: "Medium probability of occurrence, particularly during examination periods and peak registration times.",
-      controls: "Current controls include basic load balancing and server monitoring. Regular maintenance is performed, but the system lacks redundancy and advanced scaling capabilities.",
-      mitigation: "1. Upgrade server infrastructure with cloud-based solutions\n2. Implement advanced load balancing\n3. Establish redundancy systems\n4. Regular capacity planning and monitoring\n5. Develop contingency plans for system failures"
-    }
-  ]);
+  const [risks, setRisks] = useState([]);
+
+  useEffect(() => {
+    const fetchRisks = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/risks");
+        const data = await res.json();
+        if (data.success) {
+          setRisks(data.data);
+        } else {
+          toast.error("Failed to fetch risks");
+        }
+      } catch (err) {
+        toast.error("Failed to fetch risks");
+      }
+    };
+    fetchRisks();
+  }, []);
 
   const handleViewRisk = (risk) => {
     setSelectedRisk(risk);
@@ -82,7 +82,7 @@ const RegisterRiskPage = () => {
   const filteredRisks = risks.filter(risk => {
     const matchesSearch = risk.title.toLowerCase().includes(search.toLowerCase()) ||
                          risk.id.toLowerCase().includes(search.toLowerCase()) ||
-                         risk.owner.toLowerCase().includes(search.toLowerCase());
+                         (risk.principalOwner || "").toLowerCase().includes(search.toLowerCase());
     const matchesCategory = category === "All Categories" || risk.category === category;
     const matchesStatus = status === "All Statuses" || risk.status === status;
     return matchesSearch && matchesCategory && matchesStatus;
@@ -127,15 +127,15 @@ const RegisterRiskPage = () => {
           <Button onClick={() => setShowForm(true)} className="bg-primary text-white">Register New Risk</Button>
         </div>
       </div>
-      <Card className="overflow-x-auto">
+      <Card >
         <table className="min-w-full text-sm">
           <thead>
             <tr className="bg-muted text-left">
-              <th className="py-3 px-4 font-semibold">Risk ID</th>
-              <th className="py-3 px-4 font-semibold">Risk Title</th>
-              <th className="py-3 px-4 font-semibold">Risk Owner</th>
-              <th className="py-3 px-4 font-semibold">Category</th>
-              <th className="py-3 px-4 font-semibold">Actions</th>
+              <th className="py-3 px-4 font-semibold w-15">Risk ID</th>
+              <th className="py-3 px-4 font-semibold w-85">Risk Title</th>
+              <th className="py-3 px-4 font-semibold w-48">Risk Owner</th>
+              <th className="py-3 px-4 font-semibold w-64">Category</th>
+              <th className="py-3 px-4 font-semibold w-24">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -146,7 +146,7 @@ const RegisterRiskPage = () => {
                 <tr key={idx} className="border-b hover:bg-muted/50">
                   <td className="py-3 px-4 font-medium">{risk.id}</td>
                   <td className="py-3 px-4">{risk.title}</td>
-                  <td className="py-3 px-4">{risk.owner}</td>
+                  <td className="py-3 px-4">{risk.principalOwner}</td>
                   <td className="py-3 px-4">{risk.category}</td>
                   <td className="py-3 px-4">
                     <Button 

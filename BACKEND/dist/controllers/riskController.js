@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.registerRisk = void 0;
+exports.getAllRisks = exports.registerRisk = void 0;
 const Risk_1 = require("../models/Risk");
 const registerRisk = async (req, res) => {
     console.log("Incoming Risk Data:", req.body);
@@ -40,3 +40,14 @@ const registerRisk = async (req, res) => {
     }
 };
 exports.registerRisk = registerRisk;
+const getAllRisks = async (req, res) => {
+    try {
+        const risks = await Risk_1.RiskModel.find().sort({ createdAt: -1 });
+        res.status(200).json({ success: true, data: risks });
+    }
+    catch (err) {
+        console.error('Error fetching risks:', err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+exports.getAllRisks = getAllRisks;

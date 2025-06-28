@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,9 +12,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { stat } from "fs";
 
+const STRATEGIC_OBJECTIVES = [
+  { value: "A", label: "A. Incidence and impacts of HIV/AIDS and non-communicable diseases reduced" },
+  { value: "B", label: "B. The National Anti-Corruption Strategy and Action Plan effectively implemented" },
+  { value: "C", label: "C. Quality, relevance and responsiveness of undergraduate training, leadership in postgraduate training and industry linkages enhanced" },
+  { value: "D", label: "D. Research, innovation, and knowledge exchange enhanced" },
+  { value: "E", label: "E. Governance, Leadership and Management Systems and Processes Strengthened." },
+  { value: "F", label: "F. Internationalization, marketing and visibility" },
+  { value: "G", label: "G. Institutional capacity and operational efficiency strengthened" },
+];
+
 const RiskRegistrationForm = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("details");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -33,25 +42,6 @@ const RiskRegistrationForm = () => {
     existingControls: "",
     proposedMitigation: "",
   });
-
-const [strategicObjectives, setStrategicObjectives] = useState([]);
-  const [loadingObjectives, setLoadingObjectives] = useState(true);
-
-  useEffect(() => {
-    const fetchStrategicObjectives = async () => {
-      try {
-        const res = await fetch("http://localhost:3000/api/strategic-objectives");
-        const data = await res.json();
-        setStrategicObjectives(data);
-      } catch (error) {
-        console.error("Failed to load strategic objectives", error);
-      } finally {
-        setLoadingObjectives(false);
-      }
-    };
-
-    fetchStrategicObjectives();
-  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -86,23 +76,17 @@ const handleSubmit = async (e) => {
     });
 
     if (!response.ok) {
-      throw new Error("Failed to submit form");
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to submit form");
     }
 
-    toast({
-      title: "Risk Registered",
-      description: "The risk has been successfully registered.",
-    });
+    toast.success("Risk registered successfully");
 
     setTimeout(() => {
-      navigate("/coordinator/dashboard");
+      navigate("/coordinator/register-risk");
     }, 1500);
   } catch (error) {
-    toast({
-      title: "Submission Failed",
-      description: error.message,
-      variant: "destructive",
-    });
+    toast.error(error.message);
   } finally {
     setIsSubmitting(false);
   }
@@ -214,7 +198,7 @@ const handleSubmit = async (e) => {
             <TabsContent value="details" className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="title">Risk Title</Label>
-                <Input
+                <Textarea
                   id="title"
                   name="title"
                   value={formData.title}
@@ -246,11 +230,10 @@ const handleSubmit = async (e) => {
       <SelectValue placeholder="Select strategic objective" />
     </SelectTrigger>
     <SelectContent>
-      <SelectItem value="A">A-Enhance Academic Excellence</SelectItem>
-      <SelectItem value="B">B-Promote Research and Innovation</SelectItem>
-      <SelectItem value="C">C-Improve Institutional Sustainability</SelectItem>
-      <SelectItem value="D">D-Strengthen Community Engagement</SelectItem>
-         </SelectContent>
+      {STRATEGIC_OBJECTIVES.map(obj => (
+        <SelectItem key={obj.value} value={obj.value}>{obj.label}</SelectItem>
+      ))}
+    </SelectContent>
   </Select>
 </div>
 
@@ -318,17 +301,17 @@ const handleSubmit = async (e) => {
                     <SelectValue placeholder="Select risk category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="academic">Academic</SelectItem>
-                    <SelectItem value="compliance">Compliance</SelectItem>
-                    <SelectItem value="financial">Financial</SelectItem>
-                    <SelectItem value="fraud-corruption">Fraud and Corruption</SelectItem>
-                    <SelectItem value="governance">Governance</SelectItem>
-                    <SelectItem value="health-safety-welfare">Health, Safety and Welfare</SelectItem>
-                    <SelectItem value="human-capital">Human capital</SelectItem>
-                    <SelectItem value="ict">ICT</SelectItem>
-                    <SelectItem value="infrastructure-management">Infrastructure Management</SelectItem>
-                    <SelectItem value="operational">Operational</SelectItem>
-                    <SelectItem value="research-consultancy">Research & Consultancy</SelectItem>
+                    <SelectItem value="Academic">Academic</SelectItem>
+                    <SelectItem value="Compliance">Compliance</SelectItem>
+                    <SelectItem value="Financial">Financial</SelectItem>
+                    <SelectItem value="Fraud and Corruption">Fraud and Corruption</SelectItem>
+                    <SelectItem value="Governance">Governance</SelectItem>
+                    <SelectItem value="Health, Safety and Welfare">Health, Safety and Welfare</SelectItem>
+                    <SelectItem value="Human capital">Human capital</SelectItem>
+                    <SelectItem value="ICT">ICT</SelectItem>
+                    <SelectItem value="Infrastructure Management">Infrastructure Management</SelectItem>
+                    <SelectItem value="Operational">Operational</SelectItem>
+                    <SelectItem value="Research & consultancy">Research & Consultancy</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -56,3 +56,13 @@ export const registerRisk = async (req: Request, res: Response): Promise<void> =
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
+export const getAllRisks = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const risks = await RiskModel.find().sort({ createdAt: -1 });
+    res.status(200).json({ success: true, data: risks });
+  } catch (err) {
+    console.error('Error fetching risks:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
