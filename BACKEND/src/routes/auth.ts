@@ -1,6 +1,7 @@
 // BACKEND/src/routes/auth.ts
 import { Router, Request, Response } from "express";
 import { login, register, logout, getProfile, registerRiskChampion } from "../controllers/authController";
+import { UserModel } from "../models/User"; // <-- ADD THIS LINE
 
 const router = Router();
 
@@ -9,9 +10,10 @@ router.post("/register", register);
 router.post("/logout", logout);
 router.get("/profile", getProfile);
 router.post("/register-risk-champion", registerRiskChampion);
-router.get("/risk-champions", async (req, res) => {
+
+router.get("/risk-champions", async (req: Request, res: Response) => {
   try {
-    const users = await require("../models/User").UserModel.find({ role: "champion" });
+    const users = await UserModel.find({ role: "champion" }); // <-- Use imported model
     // Map unit_id to unit for frontend compatibility
     const mappedUsers = users.map((user: any) => ({
       ...user.toObject(),
@@ -23,7 +25,8 @@ router.get("/risk-champions", async (req, res) => {
   }
 });
 
-router.patch("/risk-champions/:id", async (req: Request, res: Response) => {
+// This route handler now correctly uses the imported UserModel
+router.patch("/risk-champions/:id", async (req, res) => {
   try {
     const { unit_id } = req.body;
     console.log(`Updating user ${req.params.id} with unit_id: ${unit_id}`);
@@ -32,7 +35,8 @@ router.patch("/risk-champions/:id", async (req: Request, res: Response) => {
       return res.status(400).json({ message: "unit_id is required" });
     }
     
-    const user = await require("../models/User").UserModel.findByIdAndUpdate(
+    // Use the imported UserModel instead of require()
+    const user = await UserModel.findByIdAndUpdate(
       req.params.id,
       { unit_id },
       { new: true }
@@ -51,11 +55,13 @@ router.patch("/risk-champions/:id", async (req: Request, res: Response) => {
   }
 });
 
-router.delete("/risk-champions/:id", async (req: Request, res: Response) => {
+// This route handler also now correctly uses the imported UserModel
+router.delete("/risk-champions/:id", async (req, res) => {
   try {
     console.log(`Deleting user with id: ${req.params.id}`);
     
-    const user = await require("../models/User").UserModel.findByIdAndDelete(req.params.id);
+    // Use the imported UserModel instead of require()
+    const user = await UserModel.findByIdAndDelete(req.params.id);
     
     if (!user) {
       console.log(`User not found with id: ${req.params.id}`);

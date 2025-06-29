@@ -118,7 +118,7 @@ const register = async (req, res) => {
             password,
             firstName,
             lastName,
-            role: role || 'champion', // default role
+            role: role || 'champion',
             unit_id: unit,
         });
         // Generate JWT token
