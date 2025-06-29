@@ -16,6 +16,7 @@ const registerRisk = async (req, res) => {
         const prefix = strategicObjective.toUpperCase();
         const existingCount = await Risk_1.RiskModel.countDocuments({ id: { $regex: `^${prefix}` } });
         const generatedId = `${prefix}${existingCount + 1}`;
+        const rating = (impact && likelihood) ? Number(impact) * Number(likelihood) : undefined;
         const newRisk = await Risk_1.RiskModel.create({
             id: generatedId,
             strategicObjective: prefix,
@@ -27,6 +28,7 @@ const registerRisk = async (req, res) => {
             category,
             likelihood,
             impact,
+            rating,
             causes,
             consequences,
             existingControls,

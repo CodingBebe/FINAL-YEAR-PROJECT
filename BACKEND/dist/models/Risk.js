@@ -47,6 +47,7 @@ const RiskSchema = new mongoose_1.Schema({
     category: { type: String },
     likelihood: { type: String },
     impact: { type: String },
+    rating: { type: Number },
     causes: { type: String },
     consequences: { type: String },
     existingControls: { type: String },
