@@ -26,12 +26,12 @@ const units = [
 const RiskChampionsPage = () => {
   // State for showing/hiding the registration form modal
   const [showForm, setShowForm] = useState(false);
-  
+
   // State for champions data (using 'any' for now, consider defining an interface for better typing)
-  const [champions, setChampions] = useState<any[]>([]); 
+  const [champions, setChampions] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   // activeTab is declared but not used in the provided snippet.
-  const [activeTab, setActiveTab] = useState("champions"); 
+  const [activeTab, setActiveTab] = useState("champions");
   const [showActionsIdx, setShowActionsIdx] = useState<number | null>(null);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -39,29 +39,37 @@ const RiskChampionsPage = () => {
   const [newUnit, setNewUnit] = useState("");
   const actionsMenuRef = useRef<HTMLDivElement>(null); // Specify ref type
 
-  useEffect(() => {
-    async function fetchChampions() {
-      try {
-        const response = await fetch("http://localhost:3000/api/risk-champions");
-        if (!response.ok) throw new Error("Failed to fetch champions");
-        const data = await response.json();
-        setChampions(
-          data.users.map((user: any) => ({
-            ...user,
-            unit: user.unit_id || user.unit || "",
-            risks: 0,
-            completion: 0,
-            status: "Active",
-            avatar: "https://randomuser.me/api/portraits/lego/1.jpg",
-          }))
-        );
-      } catch (error) {
-        console.error("Error fetching champions:", error);
-        toast.error("Failed to load champions.");
-      }
+  // --- NEW STATE FOR LOADING ---
+  const [isLoading, setIsLoading] = useState(true); // Default to true as data loads on mount
+
+  // Helper function to re-fetch champions (extracted for reusability)
+  const fetchChampions = async () => {
+    setIsLoading(true); // Set loading to true before fetching
+    try {
+      const response = await fetch("http://localhost:3000/api/risk-champions");
+      if (!response.ok) throw new Error("Failed to fetch champions");
+      const data = await response.json();
+      setChampions(
+        data.users.map((user: any) => ({
+          ...user,
+          unit: user.unit_id || user.unit || "",
+          risks: 0,
+          completion: 0,
+          status: "Active",
+          avatar: "https://randomuser.me/api/portraits/lego/1.jpg",
+        }))
+      );
+    } catch (error) {
+      console.error("Error fetching champions:", error);
+      toast.error("Failed to load champions data.");
+    } finally {
+      setIsLoading(false); // Set loading to false after fetch completes (success or failure)
     }
-    fetchChampions();
-  }, []);
+  };
+
+  useEffect(() => {
+    fetchChampions(); // Initial fetch on component mount
+  }, []); // Empty dependency array means this runs once on mount
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -90,12 +98,8 @@ const RiskChampionsPage = () => {
         const errorData = await response.json();
         throw new Error(errorData.message || "Registration failed");
       }
-      
-      // After successful registration, refetch champions from backend
-      // It's a good pattern to call the fetch function again to ensure fresh data
-      // from the source, rather than duplicating the mapping logic.
-      await fetchChampions(); // Re-fetch all champions after registration
-      
+
+      await fetchChampions(); // Re-fetch champions after registration
       setShowForm(false); // Close the form modal
       toast.success("Risk champion registered successfully");
     } catch (error: any) {
@@ -104,28 +108,8 @@ const RiskChampionsPage = () => {
     }
   };
 
-  // Helper function to re-fetch champions (extracted for reusability)
-  const fetchChampions = async () => {
-    try {
-      const response = await fetch("http://localhost:3000/api/risk-champions");
-      if (!response.ok) throw new Error("Failed to fetch champions");
-      const data = await response.json();
-      setChampions(
-        data.users.map((user: any) => ({
-          ...user,
-          unit: user.unit_id || user.unit || "",
-          risks: 0,
-          completion: 0,
-          status: "Active",
-          avatar: "https://randomuser.me/api/portraits/lego/1.jpg",
-        }))
-      );
-    } catch (error) {
-      console.error("Error fetching champions:", error);
-      toast.error("Failed to load champions data.");
-    }
-  };
-
+  // The previous fetchChampions function definition was here.
+  // It's now correctly placed at the top and called from useEffect and handleRegister.
 
   const filteredChampions = champions.filter(c =>
     (c.name || "").toLowerCase().includes(search.toLowerCase()) ||
@@ -145,14 +129,13 @@ const RiskChampionsPage = () => {
           onChange={e => setSearch(e.target.value)}
           className="border rounded-md px-3 py-2 w-full md:w-64"
         />
-        {/* Adjusted button styling to resemble "Register New Risk" */}
-              <div className="flex-1 flex justify-end md:justify-end">
-<Button onClick={() => setShowForm(true)} className="bg-primary text-white px-6 py-2 rounded-md font-semibold">
+        <div className="flex-1 flex justify-end md:justify-end">
+          <Button onClick={() => setShowForm(true)} className="bg-primary text-white px-6 py-2 rounded-md font-semibold">
             Add Risk Champion
-        </Button>
+          </Button>
+        </div>
       </div>
-      </div>
-      
+
       {/* RiskChampionRegistrationForm Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -186,7 +169,20 @@ const RiskChampionsPage = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredChampions.length === 0 ? (
+            {isLoading ? ( // Conditional rendering based on isLoading state
+              <tr>
+                <td colSpan={6} className="text-center py-8">
+                  <div className="flex justify-center items-center">
+                    {/* Basic spinner */}
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Loading champions...
+                  </div>
+                </td>
+              </tr>
+            ) : filteredChampions.length === 0 ? (
               <tr>
                 <td colSpan={6} className="text-center py-8">No champions found.</td>
               </tr>

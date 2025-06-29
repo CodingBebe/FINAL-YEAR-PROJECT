@@ -3,8 +3,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { UserProvider } from "@/contexts/UserContext";
-import { Toaster as Sonner } from "sonner";
-import { type PropsWithChildren } from "react";
+// Removed: import { Toaster as Sonner } from "sonner"; // 'Sonner' is a type, not a component. You only need the 'Toaster' component.
+import { type PropsWithChildren } from "react"; // Not directly used in App.tsx unless you have a wrapper component
 
 import Login from "./pages/auth/Login";
 
@@ -36,52 +36,22 @@ import RiskHeatmap from "@/pages/riskCommittee/RiskHeatmap";
 //import DVCDashboard from "./pages/dvc/Dashboard";
 
 // General Pages
-//import NotFound from "./pages/NotFound";
+//import NotFound from "./pages/NotFound"; // Uncomment if you have a NotFound component
 
 const queryClient = new QueryClient();
 
 const App = () => (
+  // All providers should typically wrap the entire application or at least the router
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <BrowserRouter>
-        <Routes>
-           <Route path="/" element={<Login />} />
-          
-          {/* Risk Champion Routes */}
-          {/*<Route path="/champion/dashboard" element={<ChampionDashboard />} />
-          <Route path="/champion/submit-risk" element={<SubmitRisk />} />*/}
-          
-          {/* Risk Coordinator Routes */}
-          <Route path="/coordinator" element={<CoordinatorLayout/>}>
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="risk-champions" element={<RiskChampions />} />
-          <Route path="register-risk" element={<CoordinatorRegisterRisk />} />
-          <Route path="generate-reports" element={<GenerateReports />} />
-          <Route path="notifications" element={<Notifications />} />
-          </Route>
-          {/* Committee Routes */}
-          <Route path="/committee" element={<CommitteeLayout />}>
-            <Route path="dashboard" element={<CommitteeDashboard />} />
-            <Route path="risk-heatmap" element={<RiskHeatmap />} />
-          </Route>
-          
-          {/* DVC Routes */}
-           {/*<Route path="/dvc/dashboard" element={<DVCDashboard />} />*/}
-          
-          {/* Catch-all */}
-           {/*<Route path="*" element={<NotFound />} /> */}
-        </Routes>
-      </BrowserRouter>
-   </TooltipProvider>
-
-      <UserProvider>
-        <Toaster />
+      <Toaster /> {/* Single Toaster for the whole app */}
+      <UserProvider> {/* UserProvider wraps the BrowserRouter for global access */}
         <BrowserRouter>
           <Routes>
+            {/* The Login page is ONLY at the root path "/" */}
             <Route path="/" element={<Login />} />
-            
-            {/* Risk Champion Routes */}
+
+            {/* Risk Champion Routes - All nested under a single layout */}
             <Route path="/champion" element={<RiskChampionLayout />}>
               <Route path="dashboard" element={<RiskChampionDashboard />} />
               <Route path="risks" element={<Risks />} />
@@ -92,8 +62,8 @@ const App = () => (
               <Route path="profile" element={<Profile />} />
               <Route path="account" element={<Account />} />
             </Route>
-            
-            {/* Risk Coordinator Routes */}
+
+            {/* Risk Coordinator Routes - All nested under a single layout */}
             <Route path="/coordinator" element={<CoordinatorLayout />}>
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="risk-champions" element={<RiskChampions />} />
@@ -102,20 +72,21 @@ const App = () => (
               <Route path="notifications" element={<Notifications />} />
             </Route>
 
-            {/* Committee Routes */}
+            {/* Committee Routes - All nested under a single layout */}
             <Route path="/committee" element={<CommitteeLayout />}>
               <Route path="dashboard" element={<CommitteeDashboard />} />
               <Route path="risk-heatmap" element={<RiskHeatmap />} />
             </Route>
-            
-            {/* DVC Routes */}
+
+            {/* DVC Routes (uncomment and add if needed) */}
             {/*<Route path="/dvc/dashboard" element={<DVCDashboard />} />*/}
-            
-            {/* Catch-all */}
-            {/*<Route path="*" element={<NotFound />} /> */}
+
+            {/* Catch-all for 404 Not Found (uncomment if you have NotFound component) */}
+            {/* <Route path="*" element={<NotFound />} /> */}
           </Routes>
         </BrowserRouter>
       </UserProvider>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 

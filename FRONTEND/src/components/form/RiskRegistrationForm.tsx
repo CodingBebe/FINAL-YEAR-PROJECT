@@ -21,8 +21,12 @@ const STRATEGIC_OBJECTIVES = [
   { value: "F", label: "F. Internationalization, marketing and visibility" },
   { value: "G", label: "G. Institutional capacity and operational efficiency strengthened" },
 ];
+interface RiskRegistrationFormProps {
+  onRiskRegistered?: () => void; // This defines the prop as an optional function that takes no arguments and returns nothing
+  onCancel?: () => void;
+ }
 
-const RiskRegistrationForm = () => {
+const RiskRegistrationForm : React.FC<RiskRegistrationFormProps> = ({ onRiskRegistered, onCancel }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("details");
   const [isSubmitting, setIsSubmitting] = useState(false);
