@@ -3,6 +3,7 @@ import express from 'express';
 import cors from "cors";
 import authRouter from "./routes/auth";
 import riskRoutes from "./routes/risks";
+import submissionsRoute from './routes/submissions';
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -14,10 +15,10 @@ app.get("/", (req, res) => {
   res.send("Backend is running.");
 });
 
-// Register your auth routes under /api
-app.use("/api", authRouter);
+// Register your auth routes under /api/auth
+app.use("/api/auth", authRouter);
 app.use('/api/risks', riskRoutes);
-
+app.use('/api/submissions', submissionsRoute);
 
 console.log(process.env.MONGODB_URI);
 

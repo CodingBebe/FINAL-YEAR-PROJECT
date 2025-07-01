@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -13,13 +13,20 @@ import { Separator } from "@/components/ui/separator";
 import { stat } from "fs";
 
 const STRATEGIC_OBJECTIVES = [
-  { value: "A", label: "A. Incidence and impacts of HIV/AIDS and non-communicable diseases reduced" },
-  { value: "B", label: "B. The National Anti-Corruption Strategy and Action Plan effectively implemented" },
-  { value: "C", label: "C. Quality, relevance and responsiveness of undergraduate training, leadership in postgraduate training and industry linkages enhanced" },
-  { value: "D", label: "D. Research, innovation, and knowledge exchange enhanced" },
-  { value: "E", label: "E. Governance, Leadership and Management Systems and Processes Strengthened." },
-  { value: "F", label: "F. Internationalization, marketing and visibility" },
-  { value: "G", label: "G. Institutional capacity and operational efficiency strengthened" },
+  { value: "A:Incidence and impacts of HIV/AIDS and non-communicable diseases reduced.",
+    label: "A. Incidence and impacts of HIV/AIDS and non-communicable diseases reduced" },
+  { value: "B:The National Anti-Corruption Strategy and Action Plan effectively implemented.", 
+    label: "B. The National Anti-Corruption Strategy and Action Plan effectively implemented" },
+  { value: "C:Quality, relevance and responsiveness of undergraduate training, leadership in postgraduate training and industry linkages enhanced.", 
+    label: "C. Quality, relevance and responsiveness of undergraduate training, leadership in postgraduate training and industry linkages enhanced" },
+  { value: "D:Research, innovation, and knowledge exchange enhanced.", 
+    label: "D. Research, innovation, and knowledge exchange enhanced" },
+  { value: "E:Governance, Leadership and Management Systems and Processes Strengthened.", 
+    label: "E. Governance, Leadership and Management Systems and Processes Strengthened." },
+  { value: "F:Internationalization, marketing and visibility.", 
+    label: "F. Internationalization, marketing and visibility" },
+  { value: "G:Institutional capacity and operational efficiency strengthened.", 
+    label: "G. Institutional capacity and operational efficiency strengthened" },
 ];
 interface RiskRegistrationFormProps {
   onRiskRegistered?: () => void; // This defines the prop as an optional function that takes no arguments and returns nothing
@@ -30,6 +37,7 @@ const RiskRegistrationForm : React.FC<RiskRegistrationFormProps> = ({ onRiskRegi
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("details");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submitBtnRef = useRef<HTMLButtonElement>(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -41,10 +49,11 @@ const RiskRegistrationForm : React.FC<RiskRegistrationFormProps> = ({ onRiskRegi
     category: "",
     likelihood: "",
     impact: "",
-    causes: "",
-    consequences: "",
-    existingControls: "",
-    proposedMitigation: "",
+    causes: [""],
+    consequences: [""],
+    existingControls: [""],
+    proposedMitigation: [""],
+    targets: [""]
   });
 
   const handleChange = (e) => {
@@ -66,29 +75,24 @@ const RiskRegistrationForm : React.FC<RiskRegistrationFormProps> = ({ onRiskRegi
     });
   };
   
-const handleSubmit = async (e) => {
-  e.preventDefault();
+const handleSubmit = async () => {
   setIsSubmitting(true);
-
+  // Do not extract only the letter; send the full value
+  const submitData = { ...formData };
   try {
     const response = await fetch("http://localhost:3000/api/risks", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(formData),
+      body: JSON.stringify(submitData),
     });
-
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || "Failed to submit form");
     }
-
     toast.success("Risk registered successfully");
-
-    setTimeout(() => {
-      navigate("/coordinator/register-risk");
-    }, 1500);
+    navigate("/coordinator/register-risk");
   } catch (error) {
     toast.error(error.message);
   } finally {
@@ -180,10 +184,29 @@ const handleSubmit = async (e) => {
     return { level: "Not Calculated", color: "text-gray-500 bg-gray-50" };
   };
 
+  // Handlers for dynamic array fields
+  const handleArrayChange = (field, idx, value) => {
+    setFormData((prev) => {
+      const arr = [...prev[field]];
+      arr[idx] = value;
+      return { ...prev, [field]: arr };
+    });
+  };
+  const handleAddArrayItem = (field) => {
+    setFormData((prev) => ({ ...prev, [field]: [...prev[field], ""] }));
+  };
+  const handleRemoveArrayItem = (field, idx) => {
+    setFormData((prev) => {
+      const arr = prev[field].filter((_, i) => i !== idx);
+      return { ...prev, [field]: arr.length ? arr : [""] };
+    });
+  };
 
+  // Add debug log for activeTab
+  console.log('Current activeTab:', activeTab);
 
   return (
-    <form onSubmit={handleSubmit}>
+    <div>
       <Card className="shadow-card">
         <CardHeader>
           <CardTitle>Register New Risk</CardTitle>
@@ -266,9 +289,9 @@ const handleSubmit = async (e) => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="VC-OFFICE">Vice Chancellor Office</SelectItem>
-                    <SelectItem value="DVC-PFA">Deputy Vice Chancellor - Planning, Finance and Administration</SelectItem>
-                    <SelectItem value="DVC-AC">Deputy Vice Chancellor - Academic</SelectItem>
-                    <SelectItem value="DVC-RS">Deputy Vice Chancellor - Research</SelectItem>
+                    <SelectItem value="DVC-Planning, Finance and Administration">Deputy Vice Chancellor - Planning, Finance and Administration</SelectItem>
+                    <SelectItem value="DVC-Academic">Deputy Vice Chancellor - Academic</SelectItem>
+                    <SelectItem value="DVC-Research">Deputy Vice Chancellor - Research</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -395,54 +418,94 @@ Rating Scale: Low (1-4) • Moderate (5-9) • High (10-12) • Very High (15-25
 
               <div className="space-y-2">
                 <Label htmlFor="causes">Causes</Label>
-                <Textarea
-                  id="causes"
-                  name="causes"
-                  value={formData.causes}
-                  onChange={handleChange}
-                  placeholder="List possible causes of the risk"
-                  rows={3}
-                />
+                {formData.causes.map((cause, idx) => (
+                  <div key={idx} className="flex gap-2 mb-2">
+                    <Input
+                      name={`cause-${idx}`}
+                      value={cause}
+                      onChange={e => handleArrayChange('causes', idx, e.target.value)}
+                      placeholder={`Cause ${idx + 1}`}
+                    />
+                    <Button type="button" variant="outline" onClick={() => handleRemoveArrayItem('causes', idx)}>-</Button>
+                    {idx === formData.causes.length - 1 && (
+                      <Button type="button" variant="outline" onClick={() => handleAddArrayItem('causes')}>+</Button>
+                    )}
+                  </div>
+                ))}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="consequences">Consequences</Label>
-                <Textarea
-                  id="consequences"
-                  name="consequences"
-                  value={formData.consequences}
-                  onChange={handleChange}
-                  placeholder="Describe the possible consequences"
-                  rows={3}
-                />
+                {formData.consequences.map((consequence, idx) => (
+                  <div key={idx} className="flex gap-2 mb-2">
+                    <Input
+                      name={`consequence-${idx}`}
+                      value={consequence}
+                      onChange={e => handleArrayChange('consequences', idx, e.target.value)}
+                      placeholder={`Consequence ${idx + 1}`}
+                    />
+                    <Button type="button" variant="outline" onClick={() => handleRemoveArrayItem('consequences', idx)}>-</Button>
+                    {idx === formData.consequences.length - 1 && (
+                      <Button type="button" variant="outline" onClick={() => handleAddArrayItem('consequences')}>+</Button>
+                    )}
+                  </div>
+                ))}
               </div>
             </TabsContent>
 
             <TabsContent value="mitigation" className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="existingControls">Existing Controls</Label>
-                <Textarea
-                  id="existingControls"
-                  name="existingControls"
-                  value={formData.existingControls}
-                  onChange={handleChange}
-                  placeholder="Describe current controls in place"
-                  rows={3}
-                />
+                {formData.existingControls.map((control, idx) => (
+                  <div key={idx} className="flex gap-2 mb-2">
+                    <Input
+                      name={`control-${idx}`}
+                      value={control}
+                      onChange={e => handleArrayChange('existingControls', idx, e.target.value)}
+                      placeholder={`Control ${idx + 1}`}
+                    />
+                    <Button type="button" variant="outline" onClick={() => handleRemoveArrayItem('existingControls', idx)}>-</Button>
+                    {idx === formData.existingControls.length - 1 && (
+                      <Button type="button" variant="outline" onClick={() => handleAddArrayItem('existingControls')}>+</Button>
+                    )}
+                  </div>
+                ))}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="proposedMitigation">Proposed Mitigation</Label>
-                <Textarea
-                  id="proposedMitigation"
-                  name="proposedMitigation"
-                  value={formData.proposedMitigation}
-                  onChange={handleChange}
-                  placeholder="Describe your mitigation strategies"
-                  rows={4}
-                  required
-                />
+                {formData.proposedMitigation.map((mitigation, idx) => (
+                  <div key={idx} className="flex gap-2 mb-2">
+                    <Input
+                      name={`mitigation-${idx}`}
+                      value={mitigation}
+                      onChange={e => handleArrayChange('proposedMitigation', idx, e.target.value)}
+                      placeholder={`Mitigation ${idx + 1}`}
+                    />
+                    <Button type="button" variant="outline" onClick={() => handleRemoveArrayItem('proposedMitigation', idx)}>-</Button>
+                    {idx === formData.proposedMitigation.length - 1 && (
+                      <Button type="button" variant="outline" onClick={() => handleAddArrayItem('proposedMitigation')}>+</Button>
+                    )}
+                  </div>
+                ))}
               </div>
+
+              {/* Targets */}
+              <Label>Targets</Label>
+              {formData.targets.map((target, idx) => (
+                <div key={idx} className="flex gap-2 mb-2">
+                  <Input
+                    name={`target-${idx}`}
+                    value={target}
+                    onChange={e => handleArrayChange('targets', idx, e.target.value)}
+                    placeholder={`Target ${idx + 1}`}
+                  />
+                  <Button type="button" variant="outline" onClick={() => handleRemoveArrayItem('targets', idx)}>-</Button>
+                  {idx === formData.targets.length - 1 && (
+                    <Button type="button" variant="outline" onClick={() => handleAddArrayItem('targets')}>+</Button>
+                  )}
+              </div>
+              ))}
             </TabsContent>
           </Tabs>
         </CardContent>
@@ -460,14 +523,20 @@ Rating Scale: Low (1-4) • Moderate (5-9) • High (10-12) • Very High (15-25
                 Next
               </Button>
             ) : (
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Submitting..." : "Register Risk"}
+              <Button
+                ref={submitBtnRef}
+                type="button"
+                className="w-full bg-primary text-white"
+                disabled={isSubmitting}
+                onClick={handleSubmit}
+              >
+                {isSubmitting ? "Registering..." : "Register Risk"}
               </Button>
             )}
           </div>
         </CardFooter>
       </Card>
-    </form>
+    </div>
   );
 };
 

@@ -23,34 +23,40 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.countRisksByPrefix = exports.RiskModel = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const RiskSchema = new mongoose_1.Schema({
-    id: { type: String, required: true, unique: true },
-    title: { type: String, required: true },
-    riskId: { type: String },
+const SubmissionSchema = new mongoose_1.Schema({
+    riskId: { type: String, required: true },
+    riskTitle: { type: String, required: true },
+    timePeriod: { type: String, required: true },
+    year: { type: String, required: true },
+    principalOwner: { type: String, required: true },
+    unit_id: { type: String, required: true },
+    supportingOwner: { type: String, required: true },
     strategicObjective: { type: String, required: true },
-    description: { type: String },
-    principalOwner: { type: String },
-    supportingOwners: [{ type: String }],
-    category: { type: String },
-    likelihood: { type: String },
-    impact: { type: String },
-    rating: { type: Number },
-    causes: [{ type: String }],
-    consequences: [{ type: String }],
-    existingControls: [{ type: String }],
-    proposedMitigation: [{ type: String }],
-    targets: [{ type: String }],
+    targets: [
+        {
+            target: String,
+            achievement: String,
+            status: String,
+        },
+    ],
+    severity: { type: String, required: true },
+    likelihood: { type: Number, required: true },
+    impact: { type: Number, required: true },
+    rating: { type: Number, required: true },
     createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now },
+    quarterDate: { type: Date, default: Date.now },
+    dimensions: {
+        unit_id: String,
+        principalOwner: String,
+        severity: String,
+    },
+}, {
+    timeseries: {
+        timeField: 'quarterDate',
+        metaField: 'dimensions',
+        granularity: 'hours',
+    },
+    strict: false,
 });
-RiskSchema.pre('save', function (next) {
-    this.updatedAt = new Date();
-    next();
-});
-exports.RiskModel = mongoose_1.default.models.Risk || mongoose_1.default.model('Risk', RiskSchema);
-async function countRisksByPrefix(db, prefix) {
-    return await exports.RiskModel.countDocuments({ id: { $regex: `^${prefix}` } });
-}
-exports.countRisksByPrefix = countRisksByPrefix;
+exports.default = mongoose_1.default.model('Submission', SubmissionSchema);

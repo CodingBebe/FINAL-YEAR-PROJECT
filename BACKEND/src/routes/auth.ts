@@ -2,6 +2,7 @@
 import { Router, Request, Response } from "express";
 import { login, register, logout, getProfile, registerRiskChampion } from "../controllers/authController";
 import { UserModel } from "../models/User"; // <-- ADD THIS LINE
+import authenticate from "../middleware/authenticate";
 
 const router = Router();
 
@@ -73,6 +74,27 @@ router.delete("/risk-champions/:id", async (req, res) => {
   } catch (error) {
     console.error("Error deleting user:", error);
     res.status(500).json({ message: "Failed to delete champion", error: error instanceof Error ? error.message : "Unknown error" });
+  }
+});
+
+router.get('/me', authenticate, async (req, res) => {
+  try {
+    const user = (req as any).user; // Provided by authenticate middleware
+    res.json({
+      name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+      email: user.email || '',
+      phone: user.phone || '',
+      unit: user.unit_id || '',
+      employeeId: user.employeeId || '',
+      joinedDate: user.joinedDate || '',
+      avatarUrl: user.avatar || '',
+      initials: `${(user.firstName || '').charAt(0)}${(user.lastName || '').charAt(0)}`.toUpperCase(),
+      reportsSubmitted: user.reportsSubmitted || 0,
+      activeRisks: user.activeRisks || 0,
+      role: user.role || '',
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch user profile' });
   }
 });
 

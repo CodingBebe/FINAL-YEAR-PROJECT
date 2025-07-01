@@ -19,15 +19,8 @@ export const registerRisk = async (req: Request, res: Response): Promise<void> =
       consequences,
       existingControls,
       proposedMitigation,
+      targets,
     } = req.body;
-
-    if (!strategicObjective || !/^[A-Ga-g]$/.test(strategicObjective)) {
-      res.status(400).json({
-        success: false,
-        message: 'Invalid or missing strategic objective. Must be a letter A-G.',
-      });
-      return;
-    }
 
     const prefix = strategicObjective.toUpperCase();
     const existingCount = await RiskModel.countDocuments({ id: { $regex: `^${prefix}` } });
@@ -51,6 +44,7 @@ export const registerRisk = async (req: Request, res: Response): Promise<void> =
       consequences,
       existingControls,
       proposedMitigation,
+      targets,
     });
 
     res.status(201).json({ success: true, data: newRisk });
@@ -66,6 +60,55 @@ export const getAllRisks = async (req: Request, res: Response): Promise<void> =>
     res.status(200).json({ success: true, data: risks });
   } catch (err) {
     console.error('Error fetching risks:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+export const getRisksForChampion = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // Assume req.user is set by authentication middleware
+    const user = (req as any).user;
+    if (!user) {
+      res.status(401).json({ success: false, message: 'Unauthorized' });
+      return;
+    }
+    // Build $or array only for defined, non-empty user fields
+    const orConditions = [];
+    if (typeof user.firstName === 'string' && user.firstName.trim()) {
+      orConditions.push({ supportingOwners: { $elemMatch: { $regex: user.firstName, $options: 'i' } } });
+    }
+    if (typeof user.lastName === 'string' && user.lastName.trim()) {
+      orConditions.push({ supportingOwners: { $elemMatch: { $regex: user.lastName, $options: 'i' } } });
+    }
+    if (typeof user.email === 'string' && user.email.trim()) {
+      orConditions.push({ supportingOwners: { $elemMatch: { $regex: user.email, $options: 'i' } } });
+    }
+    if (typeof user.unit_id === 'string' && user.unit_id.trim()) {
+      orConditions.push({ supportingOwners: { $elemMatch: { $regex: user.unit_id, $options: 'i' } } });
+    }
+    if (orConditions.length === 0) {
+      res.status(200).json({ success: true, data: [] });
+      return;
+    }
+    const risks = await RiskModel.find({ $or: orConditions }).sort({ createdAt: -1 });
+    res.status(200).json({ success: true, data: risks });
+  } catch (err) {
+    console.error('Error fetching champion risks:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+export const getRiskById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const risk = await RiskModel.findOne({ id });
+    if (!risk) {
+      res.status(404).json({ success: false, message: 'Risk not found' });
+      return;
+    }
+    res.status(200).json({ success: true, data: risk });
+  } catch (err) {
+    console.error('Error fetching risk by id:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };

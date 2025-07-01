@@ -1,18 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllRisks = exports.registerRisk = void 0;
+exports.getRiskById = exports.getRisksForChampion = exports.getAllRisks = exports.registerRisk = void 0;
 const Risk_1 = require("../models/Risk");
 const registerRisk = async (req, res) => {
     console.log("Incoming Risk Data:", req.body);
     try {
-        const { strategicObjective, title, riskId, description, principalOwner, supportingOwners, category, likelihood, impact, causes, consequences, existingControls, proposedMitigation, } = req.body;
-        if (!strategicObjective || !/^[A-Ga-g]$/.test(strategicObjective)) {
-            res.status(400).json({
-                success: false,
-                message: 'Invalid or missing strategic objective. Must be a letter A-G.',
-            });
-            return;
-        }
+        const { strategicObjective, title, riskId, description, principalOwner, supportingOwners, category, likelihood, impact, causes, consequences, existingControls, proposedMitigation, targets, } = req.body;
         const prefix = strategicObjective.toUpperCase();
         const existingCount = await Risk_1.RiskModel.countDocuments({ id: { $regex: `^${prefix}` } });
         const generatedId = `${prefix}${existingCount + 1}`;
@@ -33,6 +26,7 @@ const registerRisk = async (req, res) => {
             consequences,
             existingControls,
             proposedMitigation,
+            targets,
         });
         res.status(201).json({ success: true, data: newRisk });
     }
@@ -53,3 +47,54 @@ const getAllRisks = async (req, res) => {
     }
 };
 exports.getAllRisks = getAllRisks;
+const getRisksForChampion = async (req, res) => {
+    try {
+        // Assume req.user is set by authentication middleware
+        const user = req.user;
+        if (!user) {
+            res.status(401).json({ success: false, message: 'Unauthorized' });
+            return;
+        }
+        // Build $or array only for defined, non-empty user fields
+        const orConditions = [];
+        if (typeof user.firstName === 'string' && user.firstName.trim()) {
+            orConditions.push({ supportingOwners: { $elemMatch: { $regex: user.firstName, $options: 'i' } } });
+        }
+        if (typeof user.lastName === 'string' && user.lastName.trim()) {
+            orConditions.push({ supportingOwners: { $elemMatch: { $regex: user.lastName, $options: 'i' } } });
+        }
+        if (typeof user.email === 'string' && user.email.trim()) {
+            orConditions.push({ supportingOwners: { $elemMatch: { $regex: user.email, $options: 'i' } } });
+        }
+        if (typeof user.unit_id === 'string' && user.unit_id.trim()) {
+            orConditions.push({ supportingOwners: { $elemMatch: { $regex: user.unit_id, $options: 'i' } } });
+        }
+        if (orConditions.length === 0) {
+            res.status(200).json({ success: true, data: [] });
+            return;
+        }
+        const risks = await Risk_1.RiskModel.find({ $or: orConditions }).sort({ createdAt: -1 });
+        res.status(200).json({ success: true, data: risks });
+    }
+    catch (err) {
+        console.error('Error fetching champion risks:', err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+exports.getRisksForChampion = getRisksForChampion;
+const getRiskById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const risk = await Risk_1.RiskModel.findOne({ id });
+        if (!risk) {
+            res.status(404).json({ success: false, message: 'Risk not found' });
+            return;
+        }
+        res.status(200).json({ success: true, data: risk });
+    }
+    catch (err) {
+        console.error('Error fetching risk by id:', err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+exports.getRiskById = getRiskById;

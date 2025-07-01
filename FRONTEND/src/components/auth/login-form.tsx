@@ -20,7 +20,7 @@ const handleLogin = async (e: React.FormEvent) => {
   setErrorMessage(""); // Clear any previous error
 
   try {
-    const response = await fetch("http://localhost:3000/api/login", {
+    const response = await fetch("http://localhost:3000/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -32,7 +32,10 @@ const handleLogin = async (e: React.FormEvent) => {
     if (response.ok) {
       // Optionally store user
       localStorage.setItem("user", JSON.stringify(data));
-
+      // Store JWT token for authenticated requests
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
       // Redirect based on role (robust to both data.user.role and data.role)
       const userRole = (data.user?.role || data.role || '').toLowerCase();
       switch (userRole) {

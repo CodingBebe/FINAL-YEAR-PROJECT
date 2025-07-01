@@ -1,9 +1,13 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 // BACKEND/src/routes/auth.ts
 const express_1 = require("express");
 const authController_1 = require("../controllers/authController");
 const User_1 = require("../models/User"); // <-- ADD THIS LINE
+const authenticate_1 = __importDefault(require("../middleware/authenticate"));
 const router = (0, express_1.Router)();
 router.post("/login", authController_1.login);
 router.post("/register", authController_1.register);
@@ -62,6 +66,27 @@ router.delete("/risk-champions/:id", async (req, res) => {
     catch (error) {
         console.error("Error deleting user:", error);
         res.status(500).json({ message: "Failed to delete champion", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+});
+router.get('/me', authenticate_1.default, async (req, res) => {
+    try {
+        const user = req.user; // Provided by authenticate middleware
+        res.json({
+            name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+            email: user.email || '',
+            phone: user.phone || '',
+            unit: user.unit_id || '',
+            employeeId: user.employeeId || '',
+            joinedDate: user.joinedDate || '',
+            avatarUrl: user.avatar || '',
+            initials: `${(user.firstName || '').charAt(0)}${(user.lastName || '').charAt(0)}`.toUpperCase(),
+            reportsSubmitted: user.reportsSubmitted || 0,
+            activeRisks: user.activeRisks || 0,
+            role: user.role || '',
+        });
+    }
+    catch (err) {
+        res.status(500).json({ message: 'Failed to fetch user profile' });
     }
 });
 exports.default = router;

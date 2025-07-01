@@ -1,6 +1,5 @@
-import React from "react";
-import { useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -11,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { riskApi } from "@/services/api";
 
 export default function ViewRisk() {
   const { id } = useParams();
@@ -18,17 +18,34 @@ export default function ViewRisk() {
   const [timePeriod, setTimePeriod] = useState("JANUARY-MARCH");
   const [year, setYear] = useState("2025");
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
+  const [riskData, setRiskData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
-  // Mock risk data - replace with actual data fetching
-  const riskData = {
-    id: "A1",
-    title: "Possibility of inadequate healthcare to University",
-    description: "Possibility of inadequate healthcare services",
-    principalOwner: "Planning, Finance and Administration",
-    supportingOwner: "DSS, DHRMA, UH",
-    category: "Health Safety and Welfare",
-    strategicObjective: "Incidence and impacts of HIV/AIDS"
-  };
+  useEffect(() => {
+    const fetchRisk = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        if (id) {
+          const res = await riskApi.getRiskById(id);
+          setRiskData(res.data);
+        } else {
+          setError("No risk ID provided in URL.");
+        }
+      } catch (err: any) {
+        setError(err?.response?.data?.message || "Failed to fetch risk data");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRisk();
+  }, [id]);
+
+  if (loading) return <div>Loading risk details...</div>;
+  if (error) return <div className="text-red-500">{error}</div>;
+  if (!riskData) return <div>No risk data found.</div>;
 
   const handleMatrixClick = (rating: number) => {
     setSelectedRating(rating);
@@ -37,72 +54,26 @@ export default function ViewRisk() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold">Risk Management Information</h1>
+        <div className="flex items-center gap-4">
+          <Button variant="outline" onClick={() => navigate('/champion/risks')}>
+            Back
+          </Button>
+          <h1 className="text-2xl font-bold">Risk Information</h1>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      <div className="flex gap-4 mb-4">
         <div>
           <label className="text-sm font-medium">RISK ID</label>
-          <Select value={riskData.id} onValueChange={() => {}}>
-            <SelectTrigger>
-              <SelectValue placeholder={riskData.id} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={riskData.id}>{riskData.id}</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="p-2 border rounded bg-gray-50 w-20">{riskData.id}</div>
         </div>
-        <div>
+        <div className="flex-1">
           <label className="text-sm font-medium">RISK TITLE</label>
-          <Select value={riskData.title} onValueChange={() => {}}>
-            <SelectTrigger>
-              <SelectValue placeholder={riskData.title} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={riskData.title}>{riskData.title}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div>
-          <label className="text-sm font-medium">Time Period</label>
-          <Select value={timePeriod} onValueChange={setTimePeriod}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select period" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="JANUARY-MARCH">JANUARY-MARCH</SelectItem>
-              <SelectItem value="APRIL-JUNE">APRIL-JUNE</SelectItem>
-              <SelectItem value="JULY-SEPTEMBER">JULY-SEPTEMBER</SelectItem>
-              <SelectItem value="OCTOBER-DECEMBER">OCTOBER-DECEMBER</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <label className="text-sm font-medium">Year</label>
-          <Select value={year} onValueChange={setYear}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select year" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="2024">2024</SelectItem>
-              <SelectItem value="2025">2025</SelectItem>
-              <SelectItem value="2026">2026</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="p-2 border rounded bg-gray-50">{riskData.title}</div>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={(value: "overview" | "report") => setActiveTab(value)}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="report">Report</TabsTrigger>
-        </TabsList>
-
         <TabsContent value="overview">
           <Card>
             <CardContent className="p-6">
@@ -110,122 +81,107 @@ export default function ViewRisk() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <h3 className="font-semibold text-navy-700">Risk Description</h3>
-                  <p className="text-gray-600">{riskData.description}</p>
+                  <p className="text-gray-600">{riskData.description || '-'}</p>
                 </div>
                 <div>
                   <h3 className="font-semibold text-navy-700">Principal risk owner</h3>
-                  <p className="text-gray-600">{riskData.principalOwner}</p>
+                  <p className="text-gray-600">{riskData.principalOwner || '-'}</p>
                 </div>
                 <div>
                   <h3 className="font-semibold text-navy-700">Supporting owner</h3>
-                  <p className="text-gray-600">{riskData.supportingOwner}</p>
+                  <p className="text-gray-600">{Array.isArray(riskData.supportingOwners) ? riskData.supportingOwners.join(', ') : '-'}</p>
                 </div>
                 <div>
                   <h3 className="font-semibold text-navy-700">Risk category</h3>
-                  <p className="text-gray-600">{riskData.category}</p>
+                  <p className="text-gray-600">{riskData.category || '-'}</p>
                 </div>
                 <div>
                   <h3 className="font-semibold text-navy-700">Strategic objective</h3>
-                  <p className="text-gray-600">{riskData.strategicObjective}</p>
+                  <p className="text-gray-600">{riskData.strategicObjective || '-'}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
 
-        <TabsContent value="report">
-          <Card>
-            <CardContent className="p-6">
-              <div className="space-y-6">
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="col-span-1">
-                    <h3 className="font-semibold mb-2">Target</h3>
-                    <div className="p-4 bg-navy-700 text-white rounded">
-                      <p>Provide Health education /Counselling</p>
-                    </div>
-                  </div>
-                  <div className="col-span-1">
-                    <h3 className="font-semibold mb-2">Achievement</h3>
-                    <textarea 
-                      className="w-full h-24 p-2 border rounded"
-                      placeholder="Enter achievement details"
-                    />
-                  </div>
-                  <div className="col-span-1">
-                    <h3 className="font-semibold mb-2">Status</h3>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="completed">Completed</SelectItem>
-                        <SelectItem value="in-progress">In Progress</SelectItem>
-                        <SelectItem value="not-started">Not Started</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold mb-4">Risk Assessment Matrix</h3>
-                  <div className="grid grid-cols-6 gap-1 text-center text-sm">
-                    <div className="col-start-2 col-span-5 grid grid-cols-5 gap-1">
-                      {[1, 2, 3, 4, 5].map((n) => (
-                        <div key={n} className="bg-gray-100 p-2">{n}</div>
+          {/* Causes and Consequences Side by Side */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            {/* Causes Card */}
+            {Array.isArray(riskData.causes) && riskData.causes.length > 0 && (
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold mb-2">Causes</h3>
+                  <table className="min-w-full text-sm border">
+                    <tbody>
+                      {riskData.causes.map((cause: string, idx: number) => (
+                        <tr key={idx} className="border-b">
+                          <td className="py-2 px-4">{idx + 1}</td>
+                          <td className="py-2 px-4">{cause}</td>
+                        </tr>
                       ))}
-                    </div>
-                    {[5, 4, 3, 2, 1].map((impact) => (
-                      <React.Fragment key={impact}>
-                        <div className="bg-gray-100 p-2">{impact}</div>
-                        {[1, 2, 3, 4, 5].map((likelihood) => {
-                          const rating = impact * likelihood;
-                          return (
-                            <button
-                              key={`${impact}-${likelihood}`}
-                              onClick={() => handleMatrixClick(rating)}
-                              className={`p-2 border ${
-                                selectedRating === rating
-                                  ? "bg-blue-500 text-white"
-                                  : rating <= 5
-                                  ? "bg-green-100"
-                                  : rating <= 10
-                                  ? "bg-yellow-100"
-                                  : rating <= 15
-                                  ? "bg-orange-100"
-                                  : "bg-red-100"
-                              }`}
-                            >
-                              {rating}
-                            </button>
-                          );
-                        })}
-                      </React.Fragment>
+                    </tbody>
+                  </table>
+                </CardContent>
+              </Card>
+            )}
+            {/* Consequences Card */}
+            {Array.isArray(riskData.consequences) && riskData.consequences.length > 0 && (
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold mb-2">Consequences</h3>
+                  <table className="min-w-full text-sm border">
+                    <tbody>
+                      {riskData.consequences.map((consequence: string, idx: number) => (
+                        <tr key={idx} className="border-b">
+                          <td className="py-2 px-4">{idx + 1}</td>
+                          <td className="py-2 px-4">{consequence}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+           
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4"> 
+          {/* Existing Controls Table */}
+          {Array.isArray(riskData.existingControls) && riskData.existingControls.length > 0 && (
+            <Card className="mt-4">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-2">Existing Controls</h3>
+                <table className="min-w-full text-sm border">
+                  <tbody>
+                    {riskData.existingControls.map((control: string, idx: number) => (
+                      <tr key={idx} className="border-b">
+                        <td className="py-2 px-4">{idx + 1}</td>
+                        <td className="py-2 px-4">{control}</td>
+                      </tr>
                     ))}
-                  </div>
-                  <div className="mt-4">
-                    <p className="font-semibold">Rating: {selectedRating || 0}</p>
-                    <p className="font-semibold">
-                      Severity:{" "}
-                      {selectedRating
-                        ? selectedRating <= 5
-                          ? "Low"
-                          : selectedRating <= 10
-                          ? "Medium"
-                          : selectedRating <= 15
-                          ? "High"
-                          : "Critical"
-                        : "Low"}
-                    </p>
-                  </div>
-                </div>
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
+          )}
 
-                <div className="flex justify-end gap-4">
-                  <Button variant="outline">Cancel</Button>
-                  <Button>Submit</Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Mitigation Plan Table */}
+          {Array.isArray(riskData.proposedMitigation) && riskData.proposedMitigation.length > 0 && (
+            <Card className="mt-4">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-2">Mitigation Plan</h3>
+                <table className="min-w-full text-sm border">
+                  <tbody>
+                    {riskData.proposedMitigation.map((mitigation: string, idx: number) => (
+                      <tr key={idx} className="border-b">
+                        <td className="py-2 px-4">{idx + 1}</td>
+                        <td className="py-2 px-4">{mitigation}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
+          )}
+          </div>
         </TabsContent>
       </Tabs>
     </div>

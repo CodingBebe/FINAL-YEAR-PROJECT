@@ -23,7 +23,7 @@ export default function Profile() {
             </div>
             <CardTitle className="text-xl">{user.name}</CardTitle>
             <p className="text-sm text-muted-foreground">{user.role}</p>
-            <p className="text-sm text-muted-foreground">{user.department}</p>
+            <p className="text-sm text-muted-foreground">{user.unit}</p>
           </CardHeader>
         </Card>
 
@@ -51,8 +51,8 @@ export default function Profile() {
                 <dd className="text-sm">{user.employeeId}</dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-muted-foreground">Department</dt>
-                <dd className="text-sm">{user.department}</dd>
+                <dt className="text-sm font-medium text-muted-foreground">Unit</dt>
+                <dd className="text-sm">{user.unit}</dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-muted-foreground">Joined Date</dt>

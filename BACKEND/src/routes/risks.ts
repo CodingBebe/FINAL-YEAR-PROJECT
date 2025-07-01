@@ -1,9 +1,14 @@
 import { Router } from 'express';
-import { registerRisk, getAllRisks } from '../controllers/riskController';
+import { registerRisk, getAllRisks, getRisksForChampion, getRiskById } from '../controllers/riskController';
+import authenticate from '../middleware/authenticate';
 
 const router = Router();
 
 router.post('/', registerRisk);
 router.get('/', getAllRisks);
+
+// New routes for champion
+router.get('/champion', authenticate, getRisksForChampion);
+router.get('/:id', authenticate, getRiskById);
 
 export default router;

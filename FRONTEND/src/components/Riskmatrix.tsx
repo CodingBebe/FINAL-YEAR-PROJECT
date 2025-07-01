@@ -4,12 +4,16 @@ interface RiskMatrixProps {
   selectedLikelihood?: number;
   selectedImpact?: number;
   onCellClick?: (likelihood: number, impact: number) => void;
+  onLikelihoodClick?: (likelihood: number) => void;
+  onImpactClick?: (impact: number) => void;
 }
 
 const RiskMatrix: React.FC<RiskMatrixProps> = ({
   selectedLikelihood,
   selectedImpact,
   onCellClick,
+  onLikelihoodClick,
+  onImpactClick,
 }) => {
   const likelihoods = [5, 4, 3, 2, 1];
   const impacts = [1, 2, 3, 4, 5];
@@ -46,27 +50,31 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({
           <div className="flex flex-col items-end mr-6">
             {/* Empty top space */}
             <div className="h-12"></div>
-            {/* Likelihood numbers */}
+            {/* Likelihood numbers (clickable) */}
             {likelihoods.map((likelihood) => (
-              <div
+              <button
                 key={likelihood}
-                className="h-16 w-8 flex items-center justify-center font-semibold text-gray-600"
+                className={`h-16 w-8 flex items-center justify-center font-semibold text-gray-600 border-2 rounded transition-all duration-150 ${selectedLikelihood === likelihood ? 'border-blue-500 bg-blue-100' : 'border-transparent hover:border-blue-300'}`}
+                onClick={() => onLikelihoodClick?.(likelihood)}
+                type="button"
               >
                 {likelihood}
-              </div>
+              </button>
             ))}
           </div>
 
           <div className="flex flex-col">
-            {/* Impact numbers */}
+            {/* Impact numbers (clickable) */}
             <div className="flex mb-2">
               {impacts.map((impact) => (
-                <div
+                <button
                   key={impact}
-                  className="w-16 h-10 flex items-center justify-center font-semibold text-gray-600"
+                  className={`w-16 h-10 flex items-center justify-center font-semibold text-gray-600 border-2 rounded transition-all duration-150 ${selectedImpact === impact ? 'border-blue-500 bg-blue-100' : 'border-transparent hover:border-blue-300'}`}
+                  onClick={() => onImpactClick?.(impact)}
+                  type="button"
                 >
                   {impact}
-                </div>
+                </button>
               ))}
             </div>
 
@@ -75,16 +83,19 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({
               {likelihoods.map((likelihood) =>
                 impacts.map((impact) => {
                   const score = likelihood * impact;
+                  const selected = isSelected(likelihood, impact);
+                  // Highlight if both axes are selected and this is the cell
+                  const highlight = selectedLikelihood && selectedImpact && likelihood === selectedLikelihood && impact === selectedImpact;
                   return (
                     <button
                       key={`${likelihood}-${impact}`}
-                      onClick={() => onCellClick?.(likelihood, impact)}
                       className={`
                         w-16 h-16 flex items-center justify-center text-gray-700 font-medium
                         ${getCellColor(likelihood, impact)}
-                        ${isSelected(likelihood, impact) ? 'ring-2 ring-blue-500 ring-offset-2' : ''}
+                        ${selected || highlight ? 'ring-2 ring-blue-500 ring-offset-2' : ''}
                         transition-all duration-200 hover:scale-105
                       `}
+                      type="button"
                     >
                       {score}
                     </button>
@@ -104,7 +115,7 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-yellow-300/50"></div>
-          <span className="text-sm">Medium (4-9)</span>
+          <span className="text-sm">Moderate (4-9)</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-yellow-500/50"></div>
@@ -112,7 +123,7 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-red-500/50"></div>
-          <span className="text-sm">Critical (17-25)</span>
+          <span className="text-sm">Very High (17-25)</span>
         </div>
       </div>
     </div>

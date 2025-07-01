@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create axios instance with default config
 const api = axios.create({
-  baseURL: (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: (import.meta as any).env?.VITE_API_URL || 'http://localhost:3000/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -48,6 +48,26 @@ export const riskApi = {
   getRiskById: async (id: string) => {
     try {
       const response = await api.get(`/risks/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Get risks for the logged-in champion
+  getChampionRisks: async () => {
+    try {
+      const response = await api.get('/risks/champion');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Create a new submission
+  createSubmission: async (submissionData: any) => {
+    try {
+      const response = await api.post('/submissions', submissionData);
       return response.data;
     } catch (error) {
       throw error;

@@ -70,6 +70,7 @@ const RiskDetailsModal = ({ isOpen, onClose, risk, onSave }: RiskDetailsModalPro
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <div>
         <DialogHeader>
           <div className="flex justify-between items-center">
             <DialogTitle className="text-2xl">Risk Details</DialogTitle>
@@ -80,11 +81,12 @@ const RiskDetailsModal = ({ isOpen, onClose, risk, onSave }: RiskDetailsModalPro
             )}
           </div>
         </DialogHeader>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols- gap-4">
           <Card>
             <CardContent className="p-4">
               <h3 className="font-semibold mb-2">Basic Information</h3>
-              <div className="space-y-2">
+              <div className="space-y-6">
+                <div className="grid grid-cols-[1fr_6fr] gap-4 ">
                 <div>
                   <span className="text-muted-foreground">Risk ID:</span>
                   <p className="font-medium">{risk.id}</p>
@@ -93,13 +95,16 @@ const RiskDetailsModal = ({ isOpen, onClose, risk, onSave }: RiskDetailsModalPro
                   <span className="text-muted-foreground">Title:</span>
                   <p className="font-medium">{risk.title}</p>
                 </div>
-                <div>
+                </div>
+                <div className="grid grid-cols-[4fr_3fr] gap-4  ">
+                  <div>
                   <span className="text-muted-foreground">Principal Owner:</span>
                   <p className="font-medium">{risk.principalOwner}</p>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Supporting Owners:</span>
                   <p className="font-medium">{risk.supportingOwners?.join(', ')}</p>
+                  </div>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Strategic Objective:</span>
@@ -110,6 +115,15 @@ const RiskDetailsModal = ({ isOpen, onClose, risk, onSave }: RiskDetailsModalPro
                   <p className="font-medium">{risk.category}</p>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+          </div>
+          <div className="gap-4">
+          <div className="grid grid-cols-[6fr_2fr] gap-4 mb-4">
+          <Card>
+            <CardContent className="p-4">
+              <h3 className="font-semibold mb-2">Description</h3>
+              <p className="text-muted-foreground">{risk.description}</p>
             </CardContent>
           </Card>
           <Card>
@@ -131,23 +145,58 @@ const RiskDetailsModal = ({ isOpen, onClose, risk, onSave }: RiskDetailsModalPro
               </div>
             </CardContent>
           </Card>
-          <Card className="md:col-span-2">
-            <CardContent className="p-4">
-              <h3 className="font-semibold mb-2">Description</h3>
-              <p className="text-muted-foreground">{risk.description}</p>
-            </CardContent>
-          </Card>
+          </div>
+          </div>
+         
           <Card className="md:col-span-2">
             <CardContent className="p-4">
               <h3 className="font-semibold mb-2">Risk Analysis</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <span className="text-muted-foreground">Causes:</span>
-                  <p className="mt-1">{risk.causes}</p>
+                  
+                  {Array.isArray(risk.causes) ? (
+                    <table className="min-w-full text-sm border mt-1">
+                      <thead>
+                        <tr>
+                          <th className="py-2 px-4 border-b text-left w-12"></th>
+                          <th className="py-2 px-4 border-b text-left">Causes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {risk.causes.map((cause: string, idx: number) => (
+                          <tr key={idx} className="border-b">
+                            <td className="py-2 px-4">{idx + 1}</td>
+                            <td className="py-2 px-4">{cause}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <p className="mt-1">{risk.causes}</p>
+                  )}
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Consequences:</span>
-                  <p className="mt-1">{risk.consequences}</p>
+                  
+                  {Array.isArray(risk.consequences) ? (
+                    <table className="min-w-full text-sm border mt-1">
+                      <thead>
+                        <tr>
+                          <th className="py-2 px-4 border-b text-left w-12"></th>
+                          <th className="py-2 px-4 border-b text-left">Consequence</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {risk.consequences.map((consequence: string, idx: number) => (
+                          <tr key={idx} className="border-b">
+                            <td className="py-2 px-4">{idx + 1}</td>
+                            <td className="py-2 px-4">{consequence}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <p className="mt-1">{risk.consequences}</p>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -155,14 +204,52 @@ const RiskDetailsModal = ({ isOpen, onClose, risk, onSave }: RiskDetailsModalPro
           <Card className="md:col-span-2">
             <CardContent className="p-4">
               <h3 className="font-semibold mb-2">Controls & Mitigation</h3>
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <span className="text-muted-foreground">Existing Controls:</span>
-                  <p className="mt-1">{risk.existingControls}</p>
+                  
+                  {Array.isArray(risk.existingControls) ? (
+                    <table className="min-w-full text-sm border mt-1">
+                      <thead>
+                        <tr>
+                          <th className="py-2 px-4 border-b text-left w-12"></th>
+                          <th className="py-2 px-4 border-b text-left">Control</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {risk.existingControls.map((control: string, idx: number) => (
+                          <tr key={idx} className="border-b">
+                            <td className="py-2 px-4">{idx + 1}</td>
+                            <td className="py-2 px-4">{control}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <p className="mt-1">{risk.existingControls}</p>
+                  )}
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Mitigation Plan:</span>
-                  <p className="mt-1">{risk.proposedMitigation}</p>
+                  
+                  {Array.isArray(risk.proposedMitigation) ? (
+                    <table className="min-w-full text-sm border mt-1">
+                      <thead>
+                        <tr>
+                          <th className="py-2 px-4 border-b text-left w-12"></th>
+                          <th className="py-2 px-4 border-b text-left">Mitigation</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {risk.proposedMitigation.map((mitigation: string, idx: number) => (
+                          <tr key={idx} className="border-b">
+                            <td className="py-2 px-4">{idx + 1}</td>
+                            <td className="py-2 px-4">{mitigation}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <p className="mt-1">{risk.proposedMitigation}</p>
+                  )}
                 </div>
               </div>
             </CardContent>

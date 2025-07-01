@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Table,
@@ -19,141 +19,50 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Plus, FileText, Eye } from "lucide-react";
-
-// Mock data for demonstration
-const mockRisks = [
-  {
-    id: "A1",
-    title: "Possibility of inadequate healthcare to University community members living with HIV/AIDS and Non-Communicable Diseases",
-    category: "Health Safety and Welfare",
-    supportingOwner: "Planning, Finance and Administration",
-    status: "Open",
-    rating: 25,
-    severity: "High",
-    lastUpdated: "2025-01-25",
-  },
-  {
-    id: "B1",
-    title: "Risk of non-compliance with National Anti-Corruption Requirements",
-    category: "Compliance",
-    supportingOwner: "Planning, Finance and Administration",
-    status: "Open",
-    rating: 20,
-    severity: "Medium",
-    lastUpdated: "2025-01-20",
-  },
-  {
-    id: "B2",
-    title: "Possibility of non-compliance to public service code of ethics and conduct",
-    category: "Compliance",
-    supportingOwner: "Planning, Finance and Administration",
-    status: "Managing",
-    rating: 18,
-    severity: "Medium",
-    lastUpdated: "2025-01-18",
-  },
-  {
-    id: "C1",
-    title: "Possibility of failure to sustainably run a standing scholarship programme.",
-    category: "Academic",
-    supportingOwner: "Deputy Vice Chancellor - Academic",
-    status: "Open",
-    rating: 22,
-    severity: "High",
-    lastUpdated: "2025-01-15",
-  },
-  {
-    id: "C2",
-    title: "Possibility of inadequate competences of university graduates",
-    category: "Compliance",
-    supportingOwner: "Planning, Finance and Administration",
-    status: "Managing",
-    rating: 17,
-    severity: "Medium",
-    lastUpdated: "2025-01-10",
-  },
-  {
-    id: "C3",
-    title: "Possibility of weak innovation and entrepreneurship skills to undergraduate students",
-    category: "Innovation",
-    supportingOwner: "Deputy Vice Chancellor - Academic",
-    status: "Open",
-    rating: 19,
-    severity: "Medium",
-    lastUpdated: "2025-01-08",
-  },
-  {
-    id: "C4",
-    title: "Possibility of inadequate examination processes",
-    category: "Academic",
-    supportingOwner: "Deputy Vice Chancellor – Academic",
-    status: "Managing",
-    rating: 16,
-    severity: "Medium",
-    lastUpdated: "2025-01-05",
-  },
-  {
-    id: "D1",
-    title: "Possibility of inadequate number and quality of research output",
-    category: "Research & Consultancy",
-    supportingOwner: "Deputy Vice Chancellor - Research",
-    status: "Open",
-    rating: 21,
-    severity: "High",
-    lastUpdated: "2025-01-03",
-  },
-  {
-    id: "D2",
-    title: "Possibility of attracting insufficient number of and amount of funds from consultancy projects",
-    category: "Research & Consultancy",
-    supportingOwner: "Deputy Vice Chancellor – Research",
-    status: "Managing",
-    rating: 15,
-    severity: "Medium",
-    lastUpdated: "2025-01-02",
-  },
-  {
-    id: "D3",
-    title: "Possibility of failure to harness technological development",
-    category: "Research & Consultancy",
-    supportingOwner: "Deputy Vice Chancellor – Research",
-    status: "Open",
-    rating: 18,
-    severity: "Medium",
-    lastUpdated: "2025-01-01",
-  },
-  {
-    id: "D4",
-    title: "Possibility of inadequate quality of UDSM journals",
-    category: "Research & Consultancy",
-    supportingOwner: "Deputy Vice Chancellor - Research",
-    status: "Managing",
-    rating: 14,
-    severity: "Medium",
-    lastUpdated: "2024-12-30",
-  },
-];
+import { riskApi } from "@/services/api";
 
 export default function Risks() {
+  const [risks, setRisks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const fetchRisks = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await riskApi.getChampionRisks();
+        setRisks(res.data || []);
+      } catch (err: any) {
+        setError(err?.response?.data?.message || "Failed to fetch risks");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRisks();
+  }, []);
+
   // Filter risks based on search query and category
   const filteredRisks = useMemo(() => {
-    return mockRisks.filter((risk) => {
+    return risks.filter((risk) => {
       const matchesSearch = 
-        risk.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        risk.supportingOwner.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        risk.category.toLowerCase().includes(searchQuery.toLowerCase());
+        risk.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        risk.supportingOwners?.join(", ").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        risk.category?.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesCategory = 
         categoryFilter === "all" || 
-        risk.category.toLowerCase() === categoryFilter.toLowerCase();
+        risk.category?.toLowerCase() === categoryFilter.toLowerCase();
 
       return matchesSearch && matchesCategory;
     });
-  }, [searchQuery, categoryFilter]);
+  }, [risks, searchQuery, categoryFilter]);
+
+  if (loading) return <div>Loading risks...</div>;
+  if (error) return <div className="text-red-500">{error}</div>;
 
   return (
     <div className="space-y-6">
@@ -198,11 +107,10 @@ export default function Risks() {
           <TableRow>
             <TableHead>Risk Id</TableHead>
             <TableHead>Risk Title</TableHead>
+            <TableHead>Principal Owner</TableHead>
+            <TableHead>Supporting Owners</TableHead>
             <TableHead>Category</TableHead>
-            <TableHead>Supporting Owner</TableHead>
-            <TableHead>Status</TableHead>
             <TableHead>Rating</TableHead>
-            <TableHead>Severity</TableHead>
             <TableHead>Last Updated</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -210,7 +118,7 @@ export default function Risks() {
         <TableBody>
           {filteredRisks.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+              <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                 No risks found matching your search criteria
               </TableCell>
             </TableRow>
@@ -220,11 +128,10 @@ export default function Risks() {
                 <TableCell className="font-medium">{risk.id}</TableCell>
                 <TableCell>{risk.title}</TableCell>
                 <TableCell>{risk.category}</TableCell>
-                <TableCell>{risk.supportingOwner}</TableCell>
-                <TableCell>{risk.status}</TableCell>
-                <TableCell>{risk.rating}</TableCell>
-                <TableCell>{risk.severity}</TableCell>
-                <TableCell>{risk.lastUpdated}</TableCell>
+                <TableCell>{risk.principalOwner || '-'}</TableCell>
+                <TableCell>{Array.isArray(risk.supportingOwners) ? risk.supportingOwners.join(', ') : '-'}</TableCell>
+                <TableCell>{risk.rating ?? '-'}</TableCell>
+                <TableCell>{risk.createdAt ? new Date(risk.createdAt).toLocaleDateString() : '-'}</TableCell>
                 <TableCell>
                   <div className="flex gap-2">
                     <Button

@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import api from '@/services/api';
 
 interface User {
   name: string;
@@ -23,18 +24,30 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User>({
-    name: "Angel Emmanuel",
-    email: "angel.emmanuel@udsm.ac.tz",
-    role: "Risk champion",
-    unit: "ICT Unit",
-    phone: "+255 123 456 789",
-    employeeId: "EMP123456",
-    joinedDate: "January 2023",
+    name: "",
+    email: "",
+    role: "",
+    unit: "",
+    phone: "",
+    employeeId: "",
+    joinedDate: "",
     avatarUrl: null,
-    initials: "AE",
-    reportsSubmitted: 24,
-    activeRisks: 5,
+    initials: "",
+    reportsSubmitted: 0,
+    activeRisks: 0,
   });
+
+  useEffect(() => {
+    async function fetchUser() {
+      try {
+        const res = await api.get('/auth/me');
+        setUser(res.data);
+      } catch (err) {
+        // Optionally handle error (e.g., not logged in)
+      }
+    }
+    fetchUser();
+  }, []);
 
   const updateUser = (updates: Partial<User>) => {
     setUser(prev => ({ ...prev, ...updates }));

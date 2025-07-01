@@ -12,10 +12,11 @@ export interface Risk extends Document {
   likelihood?: string;
   impact?: string;
   rating?: number;
-  causes?: string;
-  consequences?: string;
-  existingControls?: string;
-  proposedMitigation?: string;
+  causes?: string[];
+  consequences?: string[];
+  existingControls?: string[];
+  proposedMitigation?: string[];
+  targets?: string[];
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -32,10 +33,11 @@ const RiskSchema = new Schema<Risk>({
   likelihood: { type: String },
   impact: { type: String },
   rating: { type: Number },
-  causes: { type: String },
-  consequences: { type: String },
-  existingControls: { type: String },
-  proposedMitigation: { type: String },
+  causes: [{ type: String }],
+  consequences: [{ type: String }],
+  existingControls: [{ type: String }],
+  proposedMitigation: [{ type: String }],
+  targets: [{ type: String }],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });
