@@ -9,6 +9,6 @@ router.get('/', getAllRisks);
 
 // New routes for champion
 router.get('/champion', authenticate, getRisksForChampion);
-router.get('/:id', authenticate, getRiskById);
+router.get('/:riskId', authenticate, getRiskById);
 
 export default router;

@@ -23,16 +23,15 @@ export const registerRisk = async (req: Request, res: Response): Promise<void> =
     } = req.body;
 
     const prefix = strategicObjective.toUpperCase();
-    const existingCount = await RiskModel.countDocuments({ id: { $regex: `^${prefix}` } });
-    const generatedId = `${prefix}${existingCount + 1}`;
+    const existingCount = await RiskModel.countDocuments({ riskId: { $regex: `^${prefix}` } });
+    const generatedRiskId = `${prefix}${existingCount + 1}`;
 
     const rating = (impact && likelihood) ? Number(impact) * Number(likelihood) : undefined;
 
     const newRisk = await RiskModel.create({
-      id: generatedId,
+      riskId: generatedRiskId,
       strategicObjective: prefix,
       title,
-      riskId,
       description,
       principalOwner,
       supportingOwners,
@@ -100,15 +99,15 @@ export const getRisksForChampion = async (req: Request, res: Response): Promise<
 
 export const getRiskById = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
-    const risk = await RiskModel.findOne({ id });
+    const { riskId } = req.params;
+    const risk = await RiskModel.findOne({ riskId });
     if (!risk) {
       res.status(404).json({ success: false, message: 'Risk not found' });
       return;
     }
     res.status(200).json({ success: true, data: risk });
   } catch (err) {
-    console.error('Error fetching risk by id:', err);
+    console.error('Error fetching risk by riskId:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };

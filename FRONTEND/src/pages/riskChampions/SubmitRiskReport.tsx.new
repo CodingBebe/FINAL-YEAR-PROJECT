@@ -173,7 +173,7 @@ export default function SubmitRiskReport() {
     }
     
     console.log("Submitting:", {
-      riskId: riskData?.id,
+      riskId: riskData?.riskId,
       ...formData,
       rating: selectedCell
     });

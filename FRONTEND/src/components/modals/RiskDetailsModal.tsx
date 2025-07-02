@@ -16,9 +16,8 @@ interface RiskDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   risk: {
-    id: string;
+    riskId: string;
     title: string;
-    riskId?: string;
     strategicObjective: string;
     description?: string;
     principalOwner?: string;
@@ -89,7 +88,7 @@ const RiskDetailsModal = ({ isOpen, onClose, risk, onSave }: RiskDetailsModalPro
                 <div className="grid grid-cols-[1fr_6fr] gap-4 ">
                 <div>
                   <span className="text-muted-foreground">Risk ID:</span>
-                  <p className="font-medium">{risk.id}</p>
+                  <p className="font-medium">{risk.riskId}</p>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Title:</span>

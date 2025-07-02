@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 
 interface SubmissionCardProps {
-  id: string;
+  riskId: string;
   title: string;
   description: string;
   submissionDate: Date;
@@ -16,7 +16,7 @@ interface SubmissionCardProps {
 }
 
 export function SubmissionCard({
-  id,
+  riskId,
   title,
   description,
   submissionDate,
@@ -42,11 +42,11 @@ export function SubmissionCard({
   };
 
   const handleEdit = () => {
-    navigate(`/risk-champion/submissions/edit/${id}`);
+    navigate(`/risk-champion/submissions/edit/${riskId}`);
   };
 
   const handleView = () => {
-    navigate(`/risk-champion/submissions/view/${id}`);
+    navigate(`/risk-champion/submissions/view/${riskId}`);
   };
 
   return (

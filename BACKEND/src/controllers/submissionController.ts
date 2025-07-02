@@ -46,4 +46,14 @@ export const createSubmission = async (req: Request, res: Response) => {
     console.error('Submission error:', error);
     res.status(500).json({ message: 'Failed to create submission', error });
   }
+};
+
+export const getAllSubmissions = async (req: Request, res: Response) => {
+  try {
+    const submissions = await Submission.find().sort({ createdAt: -1 });
+    res.status(200).json({ success: true, data: submissions });
+  } catch (error) {
+    console.error('Error fetching submissions:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch submissions', error });
+  }
 }; 

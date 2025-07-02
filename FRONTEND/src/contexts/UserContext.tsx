@@ -18,6 +18,7 @@ interface User {
 interface UserContextType {
   user: User;
   updateUser: (updates: Partial<User>) => void;
+  refetchUser: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -37,15 +38,28 @@ export function UserProvider({ children }: { children: ReactNode }) {
     activeRisks: 0,
   });
 
-  useEffect(() => {
-    async function fetchUser() {
-      try {
-        const res = await api.get('/auth/me');
-        setUser(res.data);
-      } catch (err) {
-        // Optionally handle error (e.g., not logged in)
-      }
+  const fetchUser = async () => {
+    try {
+      const res = await api.get('/auth/me');
+      setUser(res.data);
+    } catch (err) {
+      setUser({
+        name: "",
+        email: "",
+        role: "",
+        unit: "",
+        phone: "",
+        employeeId: "",
+        joinedDate: "",
+        avatarUrl: null,
+        initials: "",
+        reportsSubmitted: 0,
+        activeRisks: 0,
+      });
     }
+  };
+
+  useEffect(() => {
     fetchUser();
   }, []);
 
@@ -54,7 +68,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <UserContext.Provider value={{ user, updateUser }}>
+    <UserContext.Provider value={{ user, updateUser, refetchUser: fetchUser }}>
       {children}
     </UserContext.Provider>
   );

@@ -124,8 +124,8 @@ export default function Risks() {
             </TableRow>
           ) : (
             filteredRisks.map((risk) => (
-              <TableRow key={risk.id}>
-                <TableCell className="font-medium">{risk.id}</TableCell>
+              <TableRow key={risk.riskId}>
+                <TableCell className="font-medium">{risk.riskId}</TableCell>
                 <TableCell>{risk.title}</TableCell>
                 <TableCell>{risk.category}</TableCell>
                 <TableCell>{risk.principalOwner || '-'}</TableCell>
@@ -137,7 +137,7 @@ export default function Risks() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => navigate(`/champion/risks/${risk.id}`)}
+                      onClick={() => navigate(`/champion/risks/${risk.riskId}`)}
                     >
                       <Eye className="h-4 w-4 mr-1" />
                       View
@@ -145,7 +145,7 @@ export default function Risks() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => navigate(`/champion/risks/${risk.id}/report`)}
+                      onClick={() => navigate(`/champion/risks/${risk.riskId}/report`)}
                     >
                       <FileText className="h-4 w-4 mr-1" />
                       Report

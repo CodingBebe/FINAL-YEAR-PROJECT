@@ -87,7 +87,7 @@ const RegisterRiskPage = () => {
   const handleSaveRisk = (updatedRisk) => {
     setRisks(prevRisks => 
       prevRisks.map(risk => 
-        risk.id === updatedRisk.id ? updatedRisk : risk
+        risk.riskId === updatedRisk.riskId ? updatedRisk : risk
       )
     );
     toast.success("Risk updated successfully");
@@ -96,7 +96,7 @@ const RegisterRiskPage = () => {
 
   const filteredRisks = risks.filter(risk => {
     const matchesSearch = risk.title.toLowerCase().includes(search.toLowerCase()) ||
-                          risk.id.toLowerCase().includes(search.toLowerCase()) ||
+                          (risk.riskId || '').toLowerCase().includes(search.toLowerCase()) ||
                           (risk.principalOwner || "").toLowerCase().includes(search.toLowerCase());
     const matchesCategory = category === "All Categories" || risk.category === category;
     const matchesStatus = status === "All Statuses" || risk.status === status;
@@ -173,7 +173,7 @@ const RegisterRiskPage = () => {
               ) : (
                 filteredRisks.map((risk, idx) => (
                   <tr key={idx} className="border-b hover:bg-muted/50">
-                    <td className="py-3 px-4 font-medium">{risk.id}</td>
+                    <td className="py-3 px-4 font-medium">{risk.riskId}</td>
                     <td className="py-3 px-4">{risk.title}</td>
                     <td className="py-3 px-4">{risk.principalOwner}</td>
                     <td className="py-3 px-4">{risk.category}</td>

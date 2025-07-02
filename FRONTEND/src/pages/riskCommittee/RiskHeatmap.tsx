@@ -1,13 +1,13 @@
 import React from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 
-// Demo risk data: [ { id, likelihood, impact } ]
-const risks = [
-  { id: 1, likelihood: 4, impact: 5 },
-  { id: 2, likelihood: 3, impact: 5 },
-  { id: 3, likelihood: 2, impact: 4 },
-  { id: 4, likelihood: 3, impact: 3 },
-  { id: 5, likelihood: 4, impact: 4 },
+// Demo risk data: [ { riskId, likelihood, impact } ]
+const demoRisks = [
+  { riskId: '1', likelihood: 4, impact: 5 },
+  { riskId: '2', likelihood: 3, impact: 5 },
+  { riskId: '3', likelihood: 2, impact: 4 },
+  { riskId: '4', likelihood: 3, impact: 3 },
+  { riskId: '5', likelihood: 4, impact: 4 },
 ];
 
 // Heatmap color logic
@@ -22,10 +22,10 @@ const getCellColor = (likelihood, impact) => {
 // Build a 5x5 grid, each cell can have multiple risk IDs
 const buildHeatmap = () => {
   const grid = Array.from({ length: 5 }, () => Array(5).fill([]));
-  risks.forEach(risk => {
+  demoRisks.forEach(risk => {
     const l = 5 - risk.likelihood; // invert for display (y axis: 5 at top)
     const i = risk.impact - 1;
-    grid[l][i] = [...(grid[l][i] || []), risk.id];
+    grid[l][i] = [...(grid[l][i] || []), risk.riskId];
   });
   return grid;
 };

@@ -38,7 +38,7 @@ export default function RiskReportPage() {
   const yearOptions = [currentYear.toString()];
 
   useEffect(() => {
-    console.log('Risk report page mounted. id param:', id);
+    console.log('Risk report page mounted. riskId param:', id);
     const fetchRisk = async () => {
       setLoading(true);
       setError(null);
@@ -118,7 +118,7 @@ export default function RiskReportPage() {
     try {
       const score = getScore();
       const submissionData = {
-        riskId: riskData.id || riskData._id,
+        riskId: riskData.riskId || riskData._id,
         riskTitle: riskData.title,
         timePeriod,
         year,
@@ -147,110 +147,108 @@ export default function RiskReportPage() {
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-4">Risk Management Information</h2>
-      <div className="flex gap-4 mb-4">
-        <div>
-          <Label>RISK ID</Label>
-          <Input value={riskData.id || riskData._id || "-"} readOnly className="w-24" />
-        </div>
-        <div className="flex-1">
-          <Label>RISK TITLE</Label>
-          <Input value={riskData.title || "-"} readOnly />
-        </div>
-        <div>
-          <Label>Time Period</Label>
-          <Select value={timePeriod} onValueChange={setTimePeriod}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Select period" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="JANUARY-MARCH">JANUARY-MARCH</SelectItem>
-              <SelectItem value="APRIL-JUNE">APRIL-JUNE</SelectItem>
-              <SelectItem value="JULY-SEPTEMBER">JULY-SEPTEMBER</SelectItem>
-              <SelectItem value="OCTOBER-DECEMBER">OCTOBER-DECEMBER</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label>Year</Label>
-          <Select value={year} onValueChange={setYear}>
-            <SelectTrigger className="w-28">
-              <SelectValue placeholder="Select year" />
-            </SelectTrigger>
-            <SelectContent>
-              {yearOptions.map((y) => (
-                <SelectItem key={y} value={y}>{y}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <Card className="mb-4">
-        <CardContent className="p-6">
-          <h3 className="text-lg font-semibold mb-2">Overview</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Risk Description</Label>
-              <div className="bg-gray-50 border rounded p-2 min-h-[40px]">{riskData.description || '-'}</div>
-            </div>
-            <div>
-              <Label>Principal risk owner</Label>
-              <div className="bg-gray-50 border rounded p-2 min-h-[40px]">{riskData.principalOwner || '-'}</div>
-            </div>
-            <div>
-              <Label>Supporting owner</Label>
-              <div className="bg-gray-50 border rounded p-2 min-h-[40px]">{Array.isArray(riskData.supportingOwners) ? riskData.supportingOwners.join(', ') : '-'}</div>
-            </div>
-            <div>
-              <Label>Risk category</Label>
-              <div className="bg-gray-50 border rounded p-2 min-h-[40px]">{riskData.category || '-'}</div>
-            </div>
-            <div>
-              <Label>Strategic objective</Label>
-              <div className="bg-gray-50 border rounded p-2 min-h-[40px]">{riskData.strategicObjective || '-'}</div>
-            </div>
+      {/* Top info row */}
+      <div className="mb-6">
+        <div className=" grid grid-cols-[1fr_5fr] gap-6">
+          <div className="flex flex-col flex-1 min-w-[120px] max-w-xs">
+            <div className="text-xs font-semibold text-gray-600 mb-1">RISK ID</div>
+            <div className="text-xl font-bold border rounded px-4 py-2 bg-white min-h-[44px] flex items-center">{riskData.riskId || riskData._id || "-"}</div>
           </div>
-        </CardContent>
-      </Card>
-
-      <div className="mb-8">
-        <div className="flex gap-2 items-center mb-2">
-          <Label className="flex-1">Target</Label>
-          <Label className="flex-1">Achievement</Label>
-          <Label className="w-1/6">Status</Label>
+          <div className="flex flex-col flex-[2] min-w-[200px] max-w-xl">
+            <div className="text-xs font-semibold text-gray-600 mb-1">RISK TITLE</div>
+            <div className="text-lg border rounded px-4 py-2 bg-white min-h-[44px] flex items-center">{riskData.title || "-"}</div>
+          </div>
         </div>
-        {targets.map((row, idx) => (
-          <div className="flex gap-2 mb-2" key={idx}>
-            <Textarea
-              className="flex-1 resize-y min-h-[40px]"
-              value={row.target}
-              onChange={e => handleTargetChange(idx, "target", e.target.value)}
-              placeholder="Provide Health education /Counselling"
-              rows={2}
-              readOnly
-            />
-            <Textarea
-              className="flex-1 resize-y min-h-[40px]"
-              value={row.achievement}
-              onChange={e => handleTargetChange(idx, "achievement", e.target.value)}
-              placeholder="Enter achievement"
-              rows={2}
-            />
-            <Select value={row.status} onValueChange={val => handleTargetChange(idx, "status", val)}>
-              <SelectTrigger className="w-1/6">
-                <SelectValue placeholder="Select status" />
+        <div className="grid grid-cols-[1fr_5fr] gap-6 mt-6">
+          <div className=" flex flex-col flex-1 min-w-[120px] max-w-xs">
+            <div className="text-xs font-semibold text-gray-600 mb-1">Time Period</div>
+            <Select value={timePeriod} onValueChange={setTimePeriod}>
+              <SelectTrigger className="w-full min-h-[44px]">
+                <SelectValue placeholder="Select period" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">Not implemented</SelectItem>
-                <SelectItem value="2">Partially implementd</SelectItem>
-                <SelectItem value="3">Fully Implemented</SelectItem>
+                <SelectItem value="JANUARY-MARCH">JANUARY-MARCH</SelectItem>
+                <SelectItem value="APRIL-JUNE">APRIL-JUNE</SelectItem>
+                <SelectItem value="JULY-SEPTEMBER">JULY-SEPTEMBER</SelectItem>
+                <SelectItem value="OCTOBER-DECEMBER">OCTOBER-DECEMBER</SelectItem>
               </SelectContent>
             </Select>
           </div>
-        ))}
+          <div className="flex flex-col flex-1 min-w-[120px] max-w-xs">
+            <div className="text-xs font-semibold text-gray-600 mb-1">Year</div>
+            <div className="text-lg border rounded px-4 py-2 bg-white min-h-[44px] flex items-center">{year}</div>
+          </div>
         </div>
+      </div>
 
-        <Label>Click on the matrix to select the likelihood and impact of this risk *</Label>
+      {/* Overview section as two-column table */}
+      <div className="mb-6">
+        <div className="bg-[#19335A] text-white text-lg font-semibold px-4 py-2 rounded-t">Overview</div>
+        <div className="border border-[#19335A] rounded-b overflow-hidden">
+          <div className="grid grid-cols-2 divide-x divide-[#19335A]">
+            <div className="py-4 px-6 space-y-6 bg-[#19335A] text-white font-bold text-lg">
+              <div>Risk Description</div>
+              <div>Principal risk owner</div>
+              <div>Supporting owner</div>
+              <div>Risk category</div>
+              <div>Strategic objective</div>
+            </div>
+            <div className="py-4 px-6 space-y-6 bg-white text-[#19335A] font-medium text-lg">
+              <div>{riskData.description || '-'}</div>
+              <div>{riskData.principalOwner || '-'}</div>
+              <div>{Array.isArray(riskData.supportingOwners) ? riskData.supportingOwners.join(', ') : '-'}</div>
+              <div>{riskData.category || '-'}</div>
+              <div>{riskData.strategicObjective || '-'}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Target/Achievement/Status table */}
+      <div className="mb-8">
+        <div className="grid grid-cols-3">
+          <div className="bg-[#19335A] text-white font-bold text-lg py-2 px-4 border border-[#19335A]">Target</div>
+          <div className="bg-[#19335A] text-white font-bold text-lg py-2 px-4 border-t border-b border-[#19335A]">Achievement</div>
+          <div className="bg-[#19335A] text-white font-bold text-lg py-2 px-4 border border-[#19335A]">Status</div>
+        </div>
+        {targets.map((row, idx) => (
+          <div className="grid grid-cols-3" key={idx}>
+            <div className="border-l border-b border-r border-[#19335A] px-4 py-2 flex items-center min-h-[48px]">
+              <Textarea
+                className="w-full resize-y min-h-[40px] border-none bg-transparent p-0 text-[#19335A]"
+                value={row.target}
+                onChange={e => handleTargetChange(idx, "target", e.target.value)}
+                placeholder="Provide Health education /Counselling"
+                rows={2}
+                readOnly
+              />
+            </div>
+            <div className="border-b border-r border-[#19335A] px-4 py-2 flex items-center min-h-[48px]">
+              <Textarea
+                className="w-full resize-y min-h-[40px] border-none bg-transparent p-0 text-[#19335A]"
+                value={row.achievement}
+                onChange={e => handleTargetChange(idx, "achievement", e.target.value)}
+                placeholder="Enter achievement"
+                rows={2}
+              />
+            </div>
+            <div className="border-b border-r border-[#19335A] px-4 py-2 flex items-center min-h-[48px]">
+              <Select value={row.status} onValueChange={val => handleTargetChange(idx, "status", val)}>
+                <SelectTrigger className="w-full bg-white text-[#19335A] border-none">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">Not implemented</SelectItem>
+                  <SelectItem value="2">Partially implemented</SelectItem>
+                  <SelectItem value="3">Fully Implemented</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <Label>Click on the matrix to select the likelihood and impact of this risk *</Label>
       <div className="mb-8 grid grid-cols-[5fr_2fr] gap-2 ">
       <div className="mb-8 space-y-4">
         

@@ -1,9 +1,8 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface Risk extends Document {
-  id: string;
+  riskId: string;
   title: string;
-  riskId?: string;
   strategicObjective: string;
   description?: string;
   principalOwner?: string;
@@ -22,9 +21,8 @@ export interface Risk extends Document {
 }
 
 const RiskSchema = new Schema<Risk>({
-  id: { type: String, required: true, unique: true },
+  riskId: { type: String, required: true, unique: true },
   title: { type: String, required: true },
-  riskId: { type: String },
   strategicObjective: { type: String, required: true },
   description: { type: String },
   principalOwner: { type: String },
@@ -50,5 +48,5 @@ RiskSchema.pre('save', function (next) {
 export const RiskModel = mongoose.models.Risk || mongoose.model<Risk>('Risk', RiskSchema);
 
 export async function countRisksByPrefix(db: mongoose.Connection, prefix: string) {
-  return await RiskModel.countDocuments({ id: { $regex: `^${prefix}` } });
+  return await RiskModel.countDocuments({ riskId: { $regex: `^${prefix}` } });
 }

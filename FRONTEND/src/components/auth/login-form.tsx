@@ -5,14 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useUser } from "@/contexts/UserContext";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-
   const [errorMessage, setErrorMessage] = useState("");
+  const { refetchUser } = useUser();
 
 const handleLogin = async (e: React.FormEvent) => {
   e.preventDefault();
@@ -36,6 +37,8 @@ const handleLogin = async (e: React.FormEvent) => {
       if (data.token) {
         localStorage.setItem("token", data.token);
       }
+      // Refetch user context after login
+      await refetchUser();
       // Redirect based on role (robust to both data.user.role and data.role)
       const userRole = (data.user?.role || data.role || '').toLowerCase();
       switch (userRole) {

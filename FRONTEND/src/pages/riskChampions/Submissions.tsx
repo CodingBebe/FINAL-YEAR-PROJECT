@@ -8,23 +8,23 @@ import { isWithinInterval, startOfQuarter, endOfQuarter, parseISO } from "date-f
 interface Submission {
   id: string;
   title: string;
-  description: string;
-  submissionDate: Date;
+  principalOwner: string;
   quarter: string;
-  status: "draft" | "submitted" | "approved" | "rejected";
+  year: string;
+  submissionDate: Date;
 }
 
 export default function Submissions() {
   const navigate = useNavigate();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [currentQuarter, setCurrentQuarter] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
 
   // Function to determine if a submission is within the current quarter
   const isCurrentQuarter = (date: Date) => {
     const now = new Date();
     const quarterStart = startOfQuarter(now);
     const quarterEnd = endOfQuarter(now);
-    
     return isWithinInterval(date, { start: quarterStart, end: quarterEnd });
   };
 
@@ -38,38 +38,38 @@ export default function Submissions() {
   };
 
   useEffect(() => {
-    // Set current quarter
     setCurrentQuarter(getCurrentQuarter());
-
-    // Fetch submissions (mock data for now)
-    const mockSubmissions: Submission[] = [
-      {
-        id: "1",
-        title: "IT Infrastructure Risk Assessment",
-        description: "Quarterly assessment of IT infrastructure risks and mitigation measures",
-        submissionDate: new Date(),
-        quarter: getCurrentQuarter(),
-        status: "draft"
-      },
-      {
-        id: "2",
-        title: "Budget Allocation Risk Report",
-        description: "Analysis of budget-related risks for the current quarter",
-        submissionDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
-        quarter: getCurrentQuarter(),
-        status: "submitted"
-      },
-      {
-        id: "3",
-        title: "Staff Training Gap Analysis",
-        description: "Assessment of training-related risks and recommendations",
-        submissionDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), // Previous quarter
-        quarter: "Q4 2023",
-        status: "approved"
+    // Fetch real submissions from backend
+    const fetchSubmissions = async () => {
+      try {
+        setError(null);
+        const res = await fetch("http://localhost:3000/api/submissions", { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+          setSubmissions(
+            data.data.map((s: any) => ({
+              id: s._id,
+              title: s.riskTitle ?? s.title ?? "Untitled Submission",
+              principalOwner: s.principalOwner ?? "-",
+              quarter: s.timePeriod ?? "-",
+              year: s.year ?? "-",
+              submissionDate: s.createdAt ? new Date(s.createdAt) : new Date(),
+              riskId: s.riskId || s._id,
+            }))
+          );
+        } else {
+          setSubmissions([]);
+          setError("No submissions found in the database.");
+        }
+      } catch (err: any) {
+        setSubmissions([]);
+        setError("Failed to fetch submissions: " + (err.message || err));
+        // Also log to console for debugging
+        console.error("Submissions fetch error:", err);
       }
-    ];
-
-    setSubmissions(mockSubmissions);
+    };
+    fetchSubmissions();
   }, []);
 
   const handleNewSubmission = () => {
@@ -92,20 +92,22 @@ export default function Submissions() {
         </Button>
       </div>
 
+      {error && (
+        <div className="text-center text-red-500 font-semibold">{error}</div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {submissions.map((submission) => (
-          <SubmissionCard
-            key={submission.id}
-            {...submission}
-            isEditable={
-              isCurrentQuarter(submission.submissionDate) &&
-              ["draft", "submitted"].includes(submission.status)
-            }
-          />
+          <div key={submission.id} className="bg-white rounded shadow p-4 flex flex-col gap-2 border">
+            <div className="font-bold text-lg">{submission.title}</div>
+            <div className="text-gray-700">Principal Owner: <span className="font-medium">{submission.principalOwner}</span></div>
+            <div className="text-gray-500">Quarter: {submission.quarter} | Year: {submission.year}</div>
+            <div className="text-xs text-gray-400 mt-2">Submitted: {submission.submissionDate.toLocaleDateString()}</div>
+          </div>
         ))}
       </div>
 
-      {submissions.length === 0 && (
+      {submissions.length === 0 && !error && (
         <div className="text-center py-12">
           <p className="text-gray-500">No submissions found for this quarter.</p>
           <Button

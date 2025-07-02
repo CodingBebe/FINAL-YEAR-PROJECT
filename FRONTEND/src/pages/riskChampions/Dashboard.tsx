@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom"
 import { Badge } from "@/components/ui/badge"
 import { DashboardHeader } from "@/components/DashboardHeader"
 import udsmLogo from "@/assets/images/udsm-logo.jpg"
+import { useUser } from "@/contexts/UserContext"
 
 interface DashboardStats {
   totalSubmissions: number;
@@ -36,15 +37,16 @@ interface Notification {
   color: "blue" | "green" | "yellow" | "red";
 }
 
-const mockTrendData = [
-  { quarter: 'Q1 2025', low: 12, moderate: 8, high: 4, veryHigh: 2, total: 26 },
-  { quarter: 'Q2 2025', low: 10, moderate: 7, high: 5, veryHigh: 3, total: 25 },
-  { quarter: 'Q3 2025', low: 11, moderate: 9, high: 4, veryHigh: 2, total: 26 },
-  { quarter: 'Q4 2025', low: 13, moderate: 8, high: 3, veryHigh: 2, total: 26 },
-];
+const getSeverity = (score: number) => {
+  if (score >= 17) return "veryHigh";
+  if (score >= 10) return "high";
+  if (score >= 4) return "moderate";
+  return "low";
+};
 
 export default function RiskChampionDashboard() {
   const navigate = useNavigate();
+  const { user } = useUser();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showReadNotifications, setShowReadNotifications] = useState(false);
@@ -55,6 +57,7 @@ export default function RiskChampionDashboard() {
     approvedSubmissions: 0,
     rejectedSubmissions: 0
   });
+  const [trendData, setTrendData] = useState<any[]>([]);
 
   useEffect(() => {
     // Fetch submissions (mock data for now)
@@ -126,6 +129,42 @@ export default function RiskChampionDashboard() {
 
     setNotifications(mockNotifications);
   }, []);
+
+  useEffect(() => {
+    // Fetch real submissions and aggregate for chart
+    const fetchAndAggregate = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/submissions", { cache: "no-store" });
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+          // Filter by unit (user.unit)
+          const filtered = data.data.filter((s: any) => s.unit_id === user.unit);
+          // Group by quarter (e.g., Q1 2025)
+          const quarterMap: Record<string, { low: number; moderate: number; high: number; veryHigh: number; total: number }> = {};
+          filtered.forEach((s: any) => {
+            const quarter = (s.timePeriod || "-") + " " + (s.year || "-");
+            const score = typeof s.rating === "number" ? s.rating : (s.likelihood && s.impact ? s.likelihood * s.impact : 0);
+            const sev = getSeverity(score);
+            if (!quarterMap[quarter]) {
+              quarterMap[quarter] = { low: 0, moderate: 0, high: 0, veryHigh: 0, total: 0 };
+            }
+            quarterMap[quarter][sev]++;
+            quarterMap[quarter].total++;
+          });
+          // Convert to array and sort by quarter
+          const quarters = Object.keys(quarterMap).sort();
+          const chartData = quarters.map(q => ({ quarter: q, ...quarterMap[q] }));
+          setTrendData(chartData);
+        } else {
+          setTrendData([]);
+        }
+      } catch (err) {
+        setTrendData([]);
+        console.error("Risk trend fetch error:", err);
+      }
+    };
+    fetchAndAggregate();
+  }, [user.unit]);
 
   // Function to check if a submission is editable
   const isSubmissionEditable = (submission: Submission) => {
@@ -372,46 +411,16 @@ export default function RiskChampionDashboard() {
               
               <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={mockTrendData}>
+                  <LineChart data={trendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
                     <XAxis dataKey="quarter" />
                     <YAxis />
                     <Tooltip />
-                    <Line 
-                      type="monotone" 
-                      dataKey="total" 
-                      stroke="#4B5563" 
-                      strokeWidth={2}
-                      dot={{ strokeWidth: 2 }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="low" 
-                      stroke="#10B981" 
-                      strokeWidth={2}
-                      dot={{ strokeWidth: 2 }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="moderate" 
-                      stroke="#F59E0B" 
-                      strokeWidth={2}
-                      dot={{ strokeWidth: 2 }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="high" 
-                      stroke="#EF4444" 
-                      strokeWidth={2}
-                      dot={{ strokeWidth: 2 }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="veryHigh" 
-                      stroke="#991B1B" 
-                      strokeWidth={2}
-                      dot={{ strokeWidth: 2 }}
-                    />
+                    <Line type="monotone" dataKey="total" stroke="#4B5563" strokeWidth={2} dot={{ strokeWidth: 2 }} />
+                    <Line type="monotone" dataKey="low" stroke="#10B981" strokeWidth={2} dot={{ strokeWidth: 2 }} />
+                    <Line type="monotone" dataKey="moderate" stroke="#F59E0B" strokeWidth={2} dot={{ strokeWidth: 2 }} />
+                    <Line type="monotone" dataKey="high" stroke="#EF4444" strokeWidth={2} dot={{ strokeWidth: 2 }} />
+                    <Line type="monotone" dataKey="veryHigh" stroke="#991B1B" strokeWidth={2} dot={{ strokeWidth: 2 }} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>

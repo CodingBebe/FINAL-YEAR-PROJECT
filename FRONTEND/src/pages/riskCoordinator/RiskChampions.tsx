@@ -250,8 +250,8 @@ const RiskChampionsPage = () => {
               <Button variant="outline" onClick={() => setShowUpdateModal(false)}>Cancel</Button>
               <Button onClick={async () => {
                 try {
-                  console.log("Updating champion:", selectedChampion._id, "with unit:", newUnit);
-                  const response = await fetch(`http://localhost:3000/api/auth/risk-champions/${selectedChampion._id}`, {
+                  console.log("Updating champion:", selectedChampion.riskId, "with unit:", newUnit);
+                  const response = await fetch(`http://localhost:3000/api/auth/risk-champions/${selectedChampion.riskId}`, {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ unit_id: newUnit }),
@@ -285,8 +285,8 @@ const RiskChampionsPage = () => {
               <Button variant="outline" onClick={() => setShowDeleteModal(false)}>Cancel</Button>
               <Button variant="destructive" onClick={async () => {
                 try {
-                  console.log("Deleting champion:", selectedChampion._id);
-                  const response = await fetch(`http://localhost:3000/api/auth/risk-champions/${selectedChampion._id}`, {
+                  console.log("Deleting champion:", selectedChampion.riskId);
+                  const response = await fetch(`http://localhost:3000/api/auth/risk-champions/${selectedChampion.riskId}`, {
                     method: "DELETE"
                   });
 

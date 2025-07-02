@@ -65,7 +65,7 @@ export default function ViewRisk() {
       <div className="flex gap-4 mb-4">
         <div>
           <label className="text-sm font-medium">RISK ID</label>
-          <div className="p-2 border rounded bg-gray-50 w-20">{riskData.id}</div>
+          <div className="p-2 border rounded bg-gray-50 w-20">{riskData.riskId || riskData.id}</div>
         </div>
         <div className="flex-1">
           <label className="text-sm font-medium">RISK TITLE</label>

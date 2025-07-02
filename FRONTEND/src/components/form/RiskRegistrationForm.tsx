@@ -75,9 +75,37 @@ const RiskRegistrationForm : React.FC<RiskRegistrationFormProps> = ({ onRiskRegi
     });
   };
   
+const validateForm = () => {
+  // Check all required fields
+  const requiredFields = [
+    'title', 'riskId', 'strategicObjective', 'description', 'principalOwner', 'category', 'likelihood', 'impact'
+  ];
+  for (const field of requiredFields) {
+    if (!formData[field] || (typeof formData[field] === 'string' && formData[field].trim() === '')) {
+      return `Please fill in the ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`;
+    }
+  }
+  // Supporting owners: at least one
+  if (!formData.supportingOwners || formData.supportingOwners.length === 0) {
+    return 'Please select at least one supporting risk owner';
+  }
+  // Array fields: at least one non-empty value
+  const arrayFields = ['causes', 'consequences', 'existingControls', 'proposedMitigation', 'targets'];
+  for (const field of arrayFields) {
+    if (!formData[field] || formData[field].length === 0 || formData[field].every((v) => !v || v.trim() === '')) {
+      return `Please provide at least one ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`;
+    }
+  }
+  return null;
+};
+
 const handleSubmit = async () => {
+  const validationError = validateForm();
+  if (validationError) {
+    toast.error(validationError);
+    return;
+  }
   setIsSubmitting(true);
-  // Do not extract only the letter; send the full value
   const submitData = { ...formData };
   try {
     const response = await fetch("http://localhost:3000/api/risks", {
@@ -92,7 +120,11 @@ const handleSubmit = async () => {
       throw new Error(errorData.message || "Failed to submit form");
     }
     toast.success("Risk registered successfully");
-    navigate("/coordinator/register-risk");
+    if (onRiskRegistered) {
+      onRiskRegistered();
+    } else {
+      navigate("/coordinator/register-risk");
+    }
   } catch (error) {
     toast.error(error.message);
   } finally {

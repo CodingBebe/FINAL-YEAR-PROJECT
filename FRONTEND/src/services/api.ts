@@ -44,10 +44,10 @@ export const riskApi = {
     }
   },
 
-  // Get a single risk by ID
-  getRiskById: async (id: string) => {
+  // Get a single risk by riskId
+  getRiskById: async (riskId: string) => {
     try {
-      const response = await api.get(`/risks/${id}`);
+      const response = await api.get(`/risks/${riskId}`);
       return response.data;
     } catch (error) {
       throw error;

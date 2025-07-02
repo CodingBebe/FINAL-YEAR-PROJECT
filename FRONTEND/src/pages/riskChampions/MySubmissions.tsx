@@ -17,229 +17,118 @@ import { useToast } from "@/components/ui/use-toast";
 interface Submission {
   id: string;
   title: string;
-  description: string;
-  submissionDate: Date;
+  principalOwner: string;
   quarter: string;
-  status: "draft" | "submitted" | "approved" | "rejected";
+  year: string;
+  submissionDate: Date;
 }
 
 export default function MySubmissions() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [filterQuarter, setFilterQuarter] = useState<string>("all");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
-
-  // Function to determine if a submission is within the current quarter
-  const isCurrentQuarter = (date: Date) => {
-    const now = new Date();
-    const quarterStart = startOfQuarter(now);
-    const quarterEnd = endOfQuarter(now);
-    return isWithinInterval(date, { start: quarterStart, end: quarterEnd });
-  };
-
-  // Function to get current quarter string
-  const getCurrentQuarter = () => {
-    const now = new Date();
-    const month = now.getMonth();
-    const year = now.getFullYear();
-    const quarter = Math.floor(month / 3) + 1;
-    return `Q${quarter} ${year}`;
-  };
+  const [filterYear, setFilterYear] = useState<string>("all");
 
   useEffect(() => {
-    // Fetch submissions (mock data for now)
-    const mockSubmissions: Submission[] = [
-      {
-        id: "1",
-        title: "IT Infrastructure Risk Assessment",
-        description: "Quarterly assessment of IT infrastructure risks and mitigation measures",
-        submissionDate: new Date(),
-        quarter: getCurrentQuarter(),
-        status: "draft"
-      },
-      {
-        id: "2",
-        title: "Budget Allocation Risk Report",
-        description: "Analysis of budget-related risks for the current quarter",
-        submissionDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-        quarter: getCurrentQuarter(),
-        status: "submitted"
-      },
-      {
-        id: "3",
-        title: "Staff Training Gap Analysis",
-        description: "Assessment of training-related risks and recommendations",
-        submissionDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
-        quarter: "Q4 2023",
-        status: "approved"
+    // Fetch real submissions from backend
+    const fetchSubmissions = async () => {
+      try {
+        setError(null);
+        const res = await fetch("http://localhost:3000/api/submissions", { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+          setSubmissions(
+            data.data.map((s: any) => ({
+              id: s._id,
+              title: s.riskTitle ?? s.title ?? "Untitled Submission",
+              principalOwner: s.principalOwner ?? "-",
+              quarter: s.timePeriod ?? "-",
+              year: s.year ?? "-",
+              submissionDate: s.createdAt ? new Date(s.createdAt) : new Date(),
+              riskId: s.riskId || s._id,
+            }))
+          );
+        } else {
+          setSubmissions([]);
+          setError("No submissions found in the database.");
+        }
+      } catch (err: any) {
+        setSubmissions([]);
+        setError("Failed to fetch submissions: " + (err.message || err));
+        console.error("MySubmissions fetch error:", err);
       }
-    ];
-
-    setSubmissions(mockSubmissions);
+    };
+    fetchSubmissions();
   }, []);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "draft":
-        return "bg-yellow-100 text-yellow-800";
-      case "submitted":
-        return "bg-blue-100 text-blue-800";
-      case "approved":
-        return "bg-green-100 text-green-800";
-      case "rejected":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
+  // Get unique quarters and years for filters
+  const availableQuarters = Array.from(new Set(submissions.map(s => s.quarter))).filter(q => q && q !== "-");
+  const availableYears = Array.from(new Set(submissions.map(s => s.year))).filter(y => y && y !== "-");
 
-  const handleEdit = (submissionId: string) => {
-    const submission = submissions.find(s => s.id === submissionId);
-    if (!submission) return;
-
-    if (!isCurrentQuarter(submission.submissionDate)) {
-      toast({
-        title: "Cannot Edit",
-        description: "You can only edit submissions from the current quarter.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (!["draft", "submitted"].includes(submission.status)) {
-      toast({
-        title: "Cannot Edit",
-        description: "You can only edit draft or submitted submissions.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    navigate(`/risk-champion/submissions/edit/${submissionId}`);
-  };
-
-  const handleView = (submissionId: string) => {
-    navigate(`/risk-champion/submissions/view/${submissionId}`);
-  };
-
-  // Filter submissions based on selected quarter and status
+  // Filter submissions based on selected quarter and year
   const filteredSubmissions = submissions.filter(submission => {
     const quarterMatch = filterQuarter === "all" || submission.quarter === filterQuarter;
-    const statusMatch = filterStatus === "all" || submission.status === filterStatus;
-    return quarterMatch && statusMatch;
+    const yearMatch = filterYear === "all" || submission.year === filterYear;
+    return quarterMatch && yearMatch;
   });
-
-  // Get available quarters for filtering
-  const availableQuarters = Array.from(new Set(submissions.map(s => s.quarter))).sort().reverse();
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">My Submissions</h1>
-          <p className="text-gray-600">Current Quarter: {getCurrentQuarter()}</p>
         </div>
       </div>
 
       {/* Filters */}
-      <Card className="bg-gray-50">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-4">
-            <Filter className="h-4 w-4 text-gray-500" />
-            <div className="flex gap-4">
-              <Select
-                value={filterQuarter}
-                onValueChange={setFilterQuarter}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select Quarter" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Quarters</SelectItem>
-                  {availableQuarters.map(quarter => (
-                    <SelectItem key={quarter} value={quarter}>
-                      {quarter}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={filterStatus}
-                onValueChange={setFilterStatus}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="submitted">Submitted</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Submissions Grid */}
-      <div className="grid grid-cols-1 gap-4">
-        {filteredSubmissions.map((submission) => (
-          <Card key={submission.id} className="bg-white">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <h3 className="font-medium">{submission.title}</h3>
-                  <p className="text-sm text-gray-600">{submission.description}</p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Badge variant="outline">{submission.quarter}</Badge>
-                    <Badge className={getStatusColor(submission.status)}>
-                      {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}
-                    </Badge>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleView(submission.id)}
-                  >
-                    View
-                  </Button>
-                  {(isCurrentQuarter(submission.submissionDate) && 
-                    ["draft", "submitted"].includes(submission.status)) && (
-                    <Button
-                      size="sm"
-                      onClick={() => handleEdit(submission.id)}
-                    >
-                      Edit
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-
-        {filteredSubmissions.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No submissions found matching your filters.</p>
-            <Button
-              variant="outline"
-              className="mt-4"
-              onClick={() => {
-                setFilterQuarter("all");
-                setFilterStatus("all");
-              }}
-            >
-              Clear Filters
-            </Button>
-          </div>
-        )}
+      <div className="flex gap-4 mb-4">
+        <Select value={filterQuarter} onValueChange={setFilterQuarter}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select Quarter" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Quarters</SelectItem>
+            {availableQuarters.map(quarter => (
+              <SelectItem key={quarter} value={quarter}>{quarter}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={filterYear} onValueChange={setFilterYear}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select Year" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Years</SelectItem>
+            {availableYears.map(year => (
+              <SelectItem key={year} value={year}>{year}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
+
+      {error && (
+        <div className="text-center text-red-500 font-semibold">{error}</div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredSubmissions.map((submission) => (
+          <div key={submission.id} className="bg-white rounded shadow p-4 flex flex-col gap-2 border">
+            <div className="font-bold text-lg">{submission.title}</div>
+            <div className="text-gray-700">Principal Owner: <span className="font-medium">{submission.principalOwner}</span></div>
+            <div className="text-gray-500">Quarter: {submission.quarter} | Year: {submission.year}</div>
+            <div className="text-xs text-gray-400 mt-2">Submitted: {submission.submissionDate.toLocaleDateString()}</div>
+          </div>
+        ))}
+      </div>
+
+      {filteredSubmissions.length === 0 && !error && (
+        <div className="text-center py-12">
+          <p className="text-gray-500">No submissions found.</p>
+        </div>
+      )}
     </div>
   );
 } 

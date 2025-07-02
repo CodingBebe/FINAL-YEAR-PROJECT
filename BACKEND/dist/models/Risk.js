@@ -26,9 +26,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.countRisksByPrefix = exports.RiskModel = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const RiskSchema = new mongoose_1.Schema({
-    id: { type: String, required: true, unique: true },
+    riskId: { type: String, required: true, unique: true },
     title: { type: String, required: true },
-    riskId: { type: String },
     strategicObjective: { type: String, required: true },
     description: { type: String },
     principalOwner: { type: String },
@@ -51,6 +50,6 @@ RiskSchema.pre('save', function (next) {
 });
 exports.RiskModel = mongoose_1.default.models.Risk || mongoose_1.default.model('Risk', RiskSchema);
 async function countRisksByPrefix(db, prefix) {
-    return await exports.RiskModel.countDocuments({ id: { $regex: `^${prefix}` } });
+    return await exports.RiskModel.countDocuments({ riskId: { $regex: `^${prefix}` } });
 }
 exports.countRisksByPrefix = countRisksByPrefix;

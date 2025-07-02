@@ -11,5 +11,5 @@ router.post('/', riskController_1.registerRisk);
 router.get('/', riskController_1.getAllRisks);
 // New routes for champion
 router.get('/champion', authenticate_1.default, riskController_1.getRisksForChampion);
-router.get('/:id', authenticate_1.default, riskController_1.getRiskById);
+router.get('/:riskId', authenticate_1.default, riskController_1.getRiskById);
 exports.default = router;

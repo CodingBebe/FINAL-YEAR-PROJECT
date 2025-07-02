@@ -7,4 +7,5 @@ const express_1 = __importDefault(require("express"));
 const submissionController_1 = require("../controllers/submissionController");
 const router = express_1.default.Router();
 router.post('/', submissionController_1.createSubmission);
+router.get('/', submissionController_1.getAllSubmissions);
 exports.default = router;
