@@ -94,16 +94,10 @@ export default function Dashboard() {
           <h1 className="text-4xl font-bold mb-1">Welcome back, Prof.</h1>
           <p className="text-muted-foreground">Here's an overview of the University's risk management status</p>
         </div>
-        <Card className="shadow-none border border-muted-foreground/10 max-w-xs w-full md:w-60 flex flex-col items-center justify-center self-start md:self-auto">
-          <CardHeader className="items-center text-center p-4">
-            <CardTitle className="text-lg">Total Risks in this Quarter</CardTitle>
-            <CardDescription>Across all units</CardDescription>
-            <CardDescription className="text-3xl font-bold text-black dark:text-white">{totalRisks}</CardDescription>
-          </CardHeader>
-        </Card>
+        
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         {riskSummary.map((risk, idx) => (
           <Card key={idx} className="shadow-none border border-muted-foreground/10">
             <CardHeader>
@@ -112,6 +106,13 @@ export default function Dashboard() {
             </CardHeader>
           </Card>
         ))}
+        <Card className="shadow-none border border-muted-foreground/10 max-w-xs w-full md:w-60 flex flex-col items-center justify-center self-start md:self-auto">
+          <CardHeader className="items-center text-center p-4">
+            <CardTitle className="text-lg">Total Risks in this Quarter</CardTitle>
+            <CardDescription>Across all units</CardDescription>
+            <CardDescription className="text-3xl font-bold text-black dark:text-white">{totalRisks}</CardDescription>
+          </CardHeader>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
