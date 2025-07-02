@@ -56,4 +56,77 @@ export const getAllSubmissions = async (req: Request, res: Response) => {
     console.error('Error fetching submissions:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch submissions', error });
   }
+};
+
+// --- Committee Dashboard Analytics Endpoints ---
+
+// 1. Severity Distribution
+export const getSeverityDistribution = async (req: Request, res: Response) => {
+  try {
+    const result = await Submission.aggregate([
+      { $group: { _id: "$severity", count: { $sum: 1 } } },
+      { $sort: { _id: 1 } }
+    ]);
+    res.json({ success: true, data: result });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to fetch severity distribution', error });
+  }
+};
+
+// 2. Risk Trends Over Time (by month/year)
+export const getRiskTrends = async (req: Request, res: Response) => {
+  try {
+    const result = await Submission.aggregate([
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+            severity: "$severity"
+          },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { '_id.year': 1, '_id.month': 1, '_id.severity': 1 } }
+    ]);
+    res.json({ success: true, data: result });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to fetch risk trends', error });
+  }
+};
+
+// 3. Unit Risk Breakdown
+export const getUnitRiskBreakdown = async (req: Request, res: Response) => {
+  try {
+    const result = await Submission.aggregate([
+      {
+        $group: {
+          _id: { unit: "$unit_id", severity: "$severity" },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { '_id.unit': 1, '_id.severity': 1 } }
+    ]);
+    res.json({ success: true, data: result });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to fetch unit risk breakdown', error });
+  }
+};
+
+// 4. Quarterly Risk Breakdown
+export const getQuarterlyRiskBreakdown = async (req: Request, res: Response) => {
+  try {
+    const result = await Submission.aggregate([
+      {
+        $group: {
+          _id: { year: "$year", quarter: "$timePeriod", severity: "$severity" },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { '_id.year': 1, '_id.quarter': 1, '_id.severity': 1 } }
+    ]);
+    res.json({ success: true, data: result });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to fetch quarterly risk breakdown', error });
+  }
 }; 

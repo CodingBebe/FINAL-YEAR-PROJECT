@@ -73,6 +73,30 @@ export const riskApi = {
       throw error;
     }
   },
+
+  // Get all submissions
+  getAllSubmissions: async () => {
+    const response = await api.get('/submissions');
+    return response.data;
+  },
+
+  // Committee Dashboard Analytics
+  getSeverityDistribution: async () => {
+    const response = await api.get('/submissions/analytics/severity-distribution');
+    return response.data;
+  },
+  getRiskTrends: async () => {
+    const response = await api.get('/submissions/analytics/risk-trends');
+    return response.data;
+  },
+  getUnitRiskBreakdown: async () => {
+    const response = await api.get('/submissions/analytics/unit-breakdown');
+    return response.data;
+  },
+  getQuarterlyRiskBreakdown: async () => {
+    const response = await api.get('/submissions/analytics/quarterly-breakdown');
+    return response.data;
+  },
 };
 
 export default api; 
