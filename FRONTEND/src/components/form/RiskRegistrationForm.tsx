@@ -106,7 +106,13 @@ const handleSubmit = async () => {
     return;
   }
   setIsSubmitting(true);
-  const submitData = { ...formData };
+  // Map Strategic Objective to 'id' and Risk ID to 'riskId'
+  const submitData = {
+    ...formData,
+    id: formData.strategicObjective, // Strategic Objective as 'id'
+    riskId: formData.riskId,         // Risk ID as 'riskId'
+  };
+  delete submitData.strategicObjective; // Remove the old field
   try {
     const response = await fetch("http://localhost:3000/api/risks", {
       method: "POST",
