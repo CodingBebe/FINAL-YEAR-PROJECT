@@ -20,7 +20,7 @@ const CATEGORIES = [
   "Operational",
   "Research & Consultancy"
 ];
-const STATUSES = ["All Statuses", "Open", "Mitigating", "Under Review"];
+//const STATUSES = ["All Statuses", "Open", "Mitigating", "Under Review"];
 
 const statusStyles = {
   Open: "bg-blue-100 text-blue-800",
@@ -37,7 +37,7 @@ const RegisterRiskPage = () => {
   const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState(CATEGORIES[0]);
-  const [status, setStatus] = useState(STATUSES[0]);
+  //const [status, setStatus] = useState(STATUSES[0]);
   const [selectedRisk, setSelectedRisk] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [risks, setRisks] = useState([]);
@@ -81,7 +81,6 @@ const RegisterRiskPage = () => {
   const handleRiskRegistered = async () => {
     setShowForm(false); // Close the form
     await fetchRisksData(); // Re-fetch the list of risks to update the table
-    toast.success("Risk registered successfully!");
   };
 
   const handleSaveRisk = (updatedRisk) => {
@@ -99,8 +98,9 @@ const RegisterRiskPage = () => {
                           (risk.riskId || '').toLowerCase().includes(search.toLowerCase()) ||
                           (risk.principalOwner || "").toLowerCase().includes(search.toLowerCase());
     const matchesCategory = category === "All Categories" || risk.category === category;
-    const matchesStatus = status === "All Statuses" || risk.status === status;
-    return matchesSearch && matchesCategory && matchesStatus;
+   // const matchesStatus = status === "All Statuses" || risk.status === status;
+   // return matchesSearch && matchesCategory && matchesStatus;
+     return matchesSearch && matchesCategory ;
   });
 
   if (showForm) {
@@ -133,12 +133,12 @@ const RegisterRiskPage = () => {
             {CATEGORIES.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Select value={status} onValueChange={setStatus}>
+       { /* <Select value={status} onValueChange={setStatus}>
           <SelectTrigger className="w-full md:w-48"><SelectValue /></SelectTrigger>
           <SelectContent>
             {STATUSES.map(st => <SelectItem key={st} value={st}>{st}</SelectItem>)}
           </SelectContent>
-        </Select>
+        </Select>*/}
         <div className="flex-1 flex justify-end">
           <Button onClick={() => setShowForm(true)} className="bg-primary text-white">Register New Risk</Button>
         </div>
