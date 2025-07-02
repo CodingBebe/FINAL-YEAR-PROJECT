@@ -46,7 +46,7 @@ const RiskChampionsPage = () => {
   const fetchChampions = async () => {
     setIsLoading(true); // Set loading to true before fetching
     try {
-      const response = await fetch("http://localhost:3000/api/risk-champions");
+      const response = await fetch("http://localhost:3000/api/auth/risk-champions");
       if (!response.ok) throw new Error("Failed to fetch champions");
       const data = await response.json();
       setChampions(
@@ -89,7 +89,7 @@ const RiskChampionsPage = () => {
 
   const handleRegister = async (champion: any) => {
     try {
-      const response = await fetch("http://localhost:3000/api/register-risk-champion", {
+      const response = await fetch("http://localhost:3000/api/auth/register-risk-champion", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(champion),
@@ -251,7 +251,7 @@ const RiskChampionsPage = () => {
               <Button onClick={async () => {
                 try {
                   console.log("Updating champion:", selectedChampion._id, "with unit:", newUnit);
-                  const response = await fetch(`http://localhost:3000/api/risk-champions/${selectedChampion._id}`, {
+                  const response = await fetch(`http://localhost:3000/api/auth/risk-champions/${selectedChampion._id}`, {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ unit_id: newUnit }),
@@ -286,7 +286,7 @@ const RiskChampionsPage = () => {
               <Button variant="destructive" onClick={async () => {
                 try {
                   console.log("Deleting champion:", selectedChampion._id);
-                  const response = await fetch(`http://localhost:3000/api/risk-champions/${selectedChampion._id}`, {
+                  const response = await fetch(`http://localhost:3000/api/auth/risk-champions/${selectedChampion._id}`, {
                     method: "DELETE"
                   });
 
