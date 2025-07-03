@@ -32,6 +32,7 @@ import Notifications from "@/pages/riskCoordinator/Notifications";
 import CommitteeLayout from "@/components/layout/CommitteeLayout";
 import CommitteeDashboard from "@/pages/riskCommittee/Dashboard";
 import RiskHeatmap from "@/pages/riskCommittee/RiskHeatmap";
+import CoordinatorSubmissions from "./pages/riskCoordinator/CoordinatorSubmissions";
 
 // DVC Pages
 //import DVCDashboard from "./pages/dvc/Dashboard";
@@ -72,6 +73,9 @@ const App = () => (
                 <Route path="register-risk" element={<CoordinatorRegisterRisk />} />
                 <Route path="generate-reports" element={<GenerateReports />} />
                 <Route path="notifications" element={<Notifications />} />
+                <Route path="submissions" element={<CoordinatorSubmissions />} />
+
+                
               </Route>
 
               {/* Committee Routes - All nested under a single layout */}

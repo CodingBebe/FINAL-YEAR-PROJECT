@@ -212,7 +212,7 @@ const Notifications = () => {
               onClick={handleClose}
               aria-label="Close"
             >
-              &times;
+              X;
             </button>
             <h2 className="text-xl font-bold mb-2">{notifications[openIdx].title}</h2>
             <div className="text-sm text-gray-500 mb-4">{notifications[openIdx].date}</div>

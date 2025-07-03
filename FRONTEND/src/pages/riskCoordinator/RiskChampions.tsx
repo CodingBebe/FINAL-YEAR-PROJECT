@@ -145,7 +145,7 @@ const RiskChampionsPage = () => {
               className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-2xl"
               onClick={() => setShowForm(false)}
             >
-              &times;
+              X
             </button>
             <RiskChampionRegistrationForm
               units={units}

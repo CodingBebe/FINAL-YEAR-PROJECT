@@ -30,6 +30,10 @@ const CoordinatorLayout = () => {
             <span className="text-xl">👥</span>
             <span className="font-medium">Risk Champions</span>
           </Link>
+          <Link to="/coordinator/submissions" className="flex items-center text-gray-200 gap-3">
+            <span className="text-xl">📄</span>
+            <span className="font-medium">View Submissions</span>
+          </Link>
         </nav>
       </aside>
       {/* Main Content */}
