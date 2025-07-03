@@ -21,6 +21,7 @@ export interface Risk extends Document {
 }
 
 const RiskSchema = new Schema<Risk>({
+  id: { type: String, unique: true, sparse: true },
   riskId: { type: String, required: true, unique: true },
   title: { type: String, required: true },
   strategicObjective: { type: String, required: true },
@@ -42,6 +43,9 @@ const RiskSchema = new Schema<Risk>({
 
 RiskSchema.pre('save', function (next) {
   this.updatedAt = new Date();
+  if (!this.id && this.riskId) {
+    this.id = this.riskId;
+  }
   next();
 });
 
