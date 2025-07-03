@@ -93,10 +93,11 @@ export default function Dashboard() {
         const { year, quarter, severity } = item._id;
         yearSet.add(year);
         if (!qMap[year]) qMap[year] = {};
-        if (!qMap[year][quarter]) qMap[year][quarter] = { total: 0, high: 0, medium: 0, low: 0 };
-        if (severity === "High") qMap[year][quarter].high = item.count;
-        if (severity === "Medium") qMap[year][quarter].medium = item.count;
-        if (severity === "Low") qMap[year][quarter].low = item.count;
+        if (!qMap[year][quarter]) qMap[year][quarter] = { veryHigh: 0, high: 0, moderate: 0, low: 0, total: 0 };
+        if (severity === "Critical" || severity === "Very High") qMap[year][quarter].veryHigh += item.count;
+        else if (severity === "High") qMap[year][quarter].high += item.count;
+        else if (severity === "Medium" || severity === "Moderate") qMap[year][quarter].moderate += item.count;
+        else if (severity === "Low") qMap[year][quarter].low += item.count;
         qMap[year][quarter].total += item.count;
       });
       setQuarterlyRisks(qMap);
@@ -250,10 +251,10 @@ export default function Dashboard() {
                     <SelectValue placeholder="Select Quarter" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Q1">Q1</SelectItem>
-                    <SelectItem value="Q2">Q2</SelectItem>
-                    <SelectItem value="Q3">Q3</SelectItem>
-                    <SelectItem value="Q4">Q4</SelectItem>
+                    <SelectItem value="JANUARY-MARCH">Q1</SelectItem>
+                    <SelectItem value="APRIL-JUNE">Q2</SelectItem>
+                    <SelectItem value="JULY-SEPTEMBER">Q3</SelectItem>
+                    <SelectItem value="OCTOBER-DECEMBER">Q4</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
