@@ -45,6 +45,7 @@ const getSeverity = (score: number) => {
 };
 
 export default function RiskChampionDashboard() {
+  console.log("RiskChampionDashboard component loaded");
   const navigate = useNavigate();
   const { user } = useUser();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -376,52 +377,9 @@ export default function RiskChampionDashboard() {
 
   return (
     <div className="p-6">
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Submissions</CardTitle>
-            <FileCheck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalSubmissions}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Reviews</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.pendingReviews}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Approved Submissions</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.approvedSubmissions}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Rejected Submissions</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.rejectedSubmissions}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Risk Trends Section */}
-        <div className="lg:col-span-2">
+        <div>
           <Card className="bg-white shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-6">
@@ -433,7 +391,6 @@ export default function RiskChampionDashboard() {
                   </TabsList>
                 </Tabs>
               </div>
-              
               <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={trendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
@@ -449,36 +406,24 @@ export default function RiskChampionDashboard() {
                   </LineChart>
                 </ResponsiveContainer>
               </div>
-              
-              <div className="flex items-center justify-center gap-4 mt-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-[#10B981] rounded-full"></div>
-                  <span>Low</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-[#F59E0B] rounded-full"></div>
-                  <span>Moderate</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-[#EF4444] rounded-full"></div>
-                  <span>High</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-[#991B1B] rounded-full"></div>
-                  <span>Very High</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-[#4B5563] rounded-full"></div>
-                  <span>Total</span>
-                </div>
+              <div className="flex items-center gap-2 mt-4">
+                <div className="w-3 h-3 bg-[#10B981] rounded-full"></div>
+                <span>Low</span>
+                <div className="w-3 h-3 bg-[#F59E0B] rounded-full ml-4"></div>
+                <span>Moderate</span>
+                <div className="w-3 h-3 bg-[#EF4444] rounded-full ml-4"></div>
+                <span>High</span>
+                <div className="w-3 h-3 bg-[#991B1B] rounded-full ml-4"></div>
+                <span>Very High</span>
+                <div className="w-3 h-3 bg-[#4B5563] rounded-full ml-4"></div>
+                <span>Total</span>
               </div>
             </CardContent>
           </Card>
         </div>
-
         {/* Notifications Section */}
-        <div className="lg:col-span-1">
-          <Card className="bg-white shadow-sm">
+        <div>
+          <Card className="bg-white shadow-sm h-full flex flex-col">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-semibold">
@@ -494,7 +439,7 @@ export default function RiskChampionDashboard() {
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1">
               <div className="space-y-4">
                 {notifications.map((notification) => (
                   <div
