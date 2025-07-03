@@ -26,6 +26,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.countRisksByPrefix = exports.RiskModel = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const RiskSchema = new mongoose_1.Schema({
+    id: { type: String, unique: true, sparse: true },
     riskId: { type: String, required: true, unique: true },
     title: { type: String, required: true },
     strategicObjective: { type: String, required: true },
@@ -46,6 +47,9 @@ const RiskSchema = new mongoose_1.Schema({
 });
 RiskSchema.pre('save', function (next) {
     this.updatedAt = new Date();
+    if (!this.id && this.riskId) {
+        this.id = this.riskId;
+    }
     next();
 });
 exports.RiskModel = mongoose_1.default.models.Risk || mongoose_1.default.model('Risk', RiskSchema);

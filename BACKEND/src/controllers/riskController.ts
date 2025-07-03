@@ -22,15 +22,12 @@ export const registerRisk = async (req: Request, res: Response): Promise<void> =
       targets,
     } = req.body;
 
-    const prefix = strategicObjective.toUpperCase();
-    const existingCount = await RiskModel.countDocuments({ riskId: { $regex: `^${prefix}` } });
-    const generatedRiskId = `${prefix}${existingCount + 1}`;
-
     const rating = (impact && likelihood) ? Number(impact) * Number(likelihood) : undefined;
 
     const newRisk = await RiskModel.create({
-      riskId: generatedRiskId,
-      strategicObjective: prefix,
+      id: riskId,
+      riskId: riskId,
+      strategicObjective,
       title,
       description,
       principalOwner,

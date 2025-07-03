@@ -166,6 +166,39 @@ export default function RiskChampionDashboard() {
     fetchAndAggregate();
   }, [user.unit]);
 
+  useEffect(() => {
+    // Fetch real submissions and update stats for champion
+    const fetchChampionSubmissions = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/submissions", { cache: "no-store" });
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+          // Filter submissions where the current user is the principalOwner or supportingOwner
+          const championSubmissions = data.data.filter((s: any) =>
+            s.principalOwner === user.name ||
+            (Array.isArray(s.supportingOwner)
+              ? s.supportingOwner.includes(user.name)
+              : s.supportingOwner === user.name) ||
+            s.principalOwner === user.email ||
+            (Array.isArray(s.supportingOwner)
+              ? s.supportingOwner.includes(user.email)
+              : s.supportingOwner === user.email)
+          );
+          setStats(prev => ({
+            ...prev,
+            totalSubmissions: championSubmissions.length
+          }));
+        } else {
+          setStats(prev => ({ ...prev, totalSubmissions: 0 }));
+        }
+      } catch (err) {
+        setStats(prev => ({ ...prev, totalSubmissions: 0 }));
+        console.error("Champion submissions fetch error:", err);
+      }
+    };
+    fetchChampionSubmissions();
+  }, [user.name, user.email]);
+
   // Function to check if a submission is editable
   const isSubmissionEditable = (submission: Submission) => {
     const currentDate = new Date();

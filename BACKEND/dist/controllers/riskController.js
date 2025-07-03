@@ -6,13 +6,11 @@ const registerRisk = async (req, res) => {
     console.log("Incoming Risk Data:", req.body);
     try {
         const { strategicObjective, title, riskId, description, principalOwner, supportingOwners, category, likelihood, impact, causes, consequences, existingControls, proposedMitigation, targets, } = req.body;
-        const prefix = strategicObjective.toUpperCase();
-        const existingCount = await Risk_1.RiskModel.countDocuments({ riskId: { $regex: `^${prefix}` } });
-        const generatedRiskId = `${prefix}${existingCount + 1}`;
         const rating = (impact && likelihood) ? Number(impact) * Number(likelihood) : undefined;
         const newRisk = await Risk_1.RiskModel.create({
-            riskId: generatedRiskId,
-            strategicObjective: prefix,
+            id: riskId,
+            riskId: riskId,
+            strategicObjective,
             title,
             description,
             principalOwner,

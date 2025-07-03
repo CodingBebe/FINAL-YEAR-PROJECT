@@ -106,13 +106,10 @@ const handleSubmit = async () => {
     return;
   }
   setIsSubmitting(true);
-  // Map Strategic Objective to 'id' and Risk ID to 'riskId'
+  // Do not map strategicObjective to 'id'. Just send formData as is.
   const submitData = {
-    ...formData,
-    id: formData.strategicObjective, // Strategic Objective as 'id'
-    riskId: formData.riskId,         // Risk ID as 'riskId'
+    ...formData
   };
-  delete submitData.strategicObjective; // Remove the old field
   try {
     const response = await fetch("http://localhost:3000/api/risks", {
       method: "POST",
@@ -242,6 +239,13 @@ const handleSubmit = async () => {
 
   // Add debug log for activeTab
   console.log('Current activeTab:', activeTab);
+
+  // Add this after formData and handlers are defined
+  useEffect(() => {
+    // Clear riskId whenever strategicObjective changes
+    setFormData((prev) => ({ ...prev, riskId: "" }));
+    // eslint-disable-next-line
+  }, [formData.strategicObjective]);
 
   return (
     <div>

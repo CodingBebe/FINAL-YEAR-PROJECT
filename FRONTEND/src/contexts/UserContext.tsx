@@ -55,7 +55,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         initials: "",
         reportsSubmitted: 0,
         activeRisks: 0,
-      });
+  });
     }
   };
 
