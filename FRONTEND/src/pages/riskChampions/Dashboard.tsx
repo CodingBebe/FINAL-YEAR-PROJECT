@@ -86,14 +86,39 @@ export default function RiskChampionDashboard() {
   }, []);
 
   useEffect(() => {
-    // Fetch dashboard stats (mock data for now)
-    setStats({
-      totalSubmissions: 15,
-      pendingReviews: 3,
-      approvedSubmissions: 10,
-      rejectedSubmissions: 2
-    });
-  }, []);
+    // Fetch real submissions and update all stats for champion
+    const fetchChampionStats = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/submissions", { cache: "no-store" });
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+          // Filter submissions where the current user is the principalOwner or supportingOwner
+          const championSubmissions = data.data.filter((s: any) =>
+            s.principalOwner === user.name ||
+            (Array.isArray(s.supportingOwner)
+              ? s.supportingOwner.includes(user.name)
+              : s.supportingOwner === user.name) ||
+            s.principalOwner === user.email ||
+            (Array.isArray(s.supportingOwner)
+              ? s.supportingOwner.includes(user.email)
+              : s.supportingOwner === user.email)
+          );
+          setStats({
+            totalSubmissions: championSubmissions.length,
+            pendingReviews: championSubmissions.filter((s: any) => s.status === 'submitted' || s.status === 'pending' || s.status === 'under review').length,
+            approvedSubmissions: championSubmissions.filter((s: any) => s.status === 'approved').length,
+            rejectedSubmissions: championSubmissions.filter((s: any) => s.status === 'rejected').length
+          });
+        } else {
+          setStats({ totalSubmissions: 0, pendingReviews: 0, approvedSubmissions: 0, rejectedSubmissions: 0 });
+        }
+      } catch (err) {
+        setStats({ totalSubmissions: 0, pendingReviews: 0, approvedSubmissions: 0, rejectedSubmissions: 0 });
+        console.error("Champion stats fetch error:", err);
+      }
+    };
+    fetchChampionStats();
+  }, [user.name, user.email]);
 
   useEffect(() => {
     // Fetch notifications (mock data for now)
@@ -165,39 +190,6 @@ export default function RiskChampionDashboard() {
     };
     fetchAndAggregate();
   }, [user.unit]);
-
-  useEffect(() => {
-    // Fetch real submissions and update stats for champion
-    const fetchChampionSubmissions = async () => {
-      try {
-        const res = await fetch("http://localhost:3000/api/submissions", { cache: "no-store" });
-        const data = await res.json();
-        if (data.success && Array.isArray(data.data)) {
-          // Filter submissions where the current user is the principalOwner or supportingOwner
-          const championSubmissions = data.data.filter((s: any) =>
-            s.principalOwner === user.name ||
-            (Array.isArray(s.supportingOwner)
-              ? s.supportingOwner.includes(user.name)
-              : s.supportingOwner === user.name) ||
-            s.principalOwner === user.email ||
-            (Array.isArray(s.supportingOwner)
-              ? s.supportingOwner.includes(user.email)
-              : s.supportingOwner === user.email)
-          );
-          setStats(prev => ({
-            ...prev,
-            totalSubmissions: championSubmissions.length
-          }));
-        } else {
-          setStats(prev => ({ ...prev, totalSubmissions: 0 }));
-        }
-      } catch (err) {
-        setStats(prev => ({ ...prev, totalSubmissions: 0 }));
-        console.error("Champion submissions fetch error:", err);
-      }
-    };
-    fetchChampionSubmissions();
-  }, [user.name, user.email]);
 
   // Function to check if a submission is editable
   const isSubmissionEditable = (submission: Submission) => {

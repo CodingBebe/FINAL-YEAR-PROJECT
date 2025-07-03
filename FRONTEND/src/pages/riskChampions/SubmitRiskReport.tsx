@@ -48,8 +48,11 @@ export default function RiskReportPage() {
           console.log('API response for getRiskById:', res);
           setRiskData(res.data || res); // fallback for direct data
           // Prefill targets if available
-          if (res.data?.targets || res.targets) {
-            setTargets((res.data?.targets || res.targets).map((t: any) => ({ target: t, achievement: "", status: "" })));
+          const dbTargets = res.data?.targets || res.targets;
+          if (Array.isArray(dbTargets)) {
+            setTargets(dbTargets.map((t: any) => ({ target: typeof t === 'string' ? t : t.target, achievement: '', status: '' })));
+          } else {
+            setTargets([]);
           }
         } else {
           setError("No risk ID provided in URL.");
@@ -211,14 +214,14 @@ export default function RiskReportPage() {
           <div className="bg-[#19335A] text-white font-bold text-lg py-2 px-4 border-t border-b border-[#19335A]">Achievement</div>
           <div className="bg-[#19335A] text-white font-bold text-lg py-2 px-4 border border-[#19335A]">Status</div>
         </div>
-        {targets.map((row, idx) => (
+        {targets.length > 0 && targets.map((row, idx) => (
           <div className="grid grid-cols-3" key={idx}>
             <div className="border-l border-b border-r border-[#19335A] px-4 py-2 flex items-center min-h-[48px]">
               <Textarea
                 className="w-full resize-y min-h-[40px] border-none bg-transparent p-0 text-[#19335A]"
                 value={row.target}
                 onChange={e => handleTargetChange(idx, "target", e.target.value)}
-                placeholder="Provide Health education /Counselling"
+                placeholder=""
                 rows={2}
                 readOnly
               />
