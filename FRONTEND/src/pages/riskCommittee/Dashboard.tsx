@@ -112,7 +112,7 @@ export default function Dashboard() {
     <div className="p-6 bg-background min-h-screen">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-4xl font-bold mb-1">Welcome back, Prof.</h1>
+          <h1 className="text-4xl font-bold mb-1">Welcome back,</h1>
           <p className="text-muted-foreground">Here's an overview of the University's risk management status</p>
         </div>
       </div>
