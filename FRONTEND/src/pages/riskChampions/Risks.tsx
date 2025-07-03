@@ -127,9 +127,9 @@ export default function Risks() {
               <TableRow key={risk.riskId}>
                 <TableCell className="font-medium">{risk.riskId}</TableCell>
                 <TableCell>{risk.title}</TableCell>
-                <TableCell>{risk.category}</TableCell>
                 <TableCell>{risk.principalOwner || '-'}</TableCell>
                 <TableCell>{Array.isArray(risk.supportingOwners) ? risk.supportingOwners.join(', ') : '-'}</TableCell>
+                <TableCell>{risk.category}</TableCell>
                 <TableCell>{risk.rating ?? '-'}</TableCell>
                 <TableCell>{risk.createdAt ? new Date(risk.createdAt).toLocaleDateString() : '-'}</TableCell>
                 <TableCell>
